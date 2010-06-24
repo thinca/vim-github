@@ -13,9 +13,10 @@ let s:base_path = '/api/v2/json'
 
 " Interfaces.  {{{1
 function! github#connect(path)  " {{{2
+  let protocol = g:github#use_https ? 'https' : 'http'
   return s:parse_json(system(
-  \ printf('curl -s -F "login=%s" -F "token=%s" http://%s%s%s',
-  \ g:github#user, g:github#token, s:domain, s:base_path, a:path)))
+  \ printf('curl -s -F "login=%s" -F "token=%s" %s://%s%s%s',
+  \ g:github#user, g:github#token, protocol, s:domain, s:base_path, a:path)))
 endfunction
 
 
@@ -55,6 +56,10 @@ endif
 if !exists('g:github#token')  " {{{2
   let g:github#token =
   \   matchstr(system('git config --global github.token'), '\w*')
+endif
+
+if !exists('g:github#use_https')  " {{{2
+  let g:github#use_https = 0
 endif
 
 
