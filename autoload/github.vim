@@ -30,6 +30,21 @@ endfunction
 
 
 
+" Main commands.  {{{1
+function! github#invoke(argline)  " {{{2
+  " The simplest implementation.
+  let [feat; args] = split(a:argline, '\s\+')
+  if !has_key(s:features, feat)
+    echohl ErrorMsg
+    echomsg 'github: Specified feature is not registered: ' . feat
+    echohl None
+    return
+  endif
+  call s:features[feat].invoke(args)
+endfunction
+
+
+
 " JSON Utilities.  {{{1
 function! s:validate_json(str)  " {{{2
   " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm
