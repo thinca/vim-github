@@ -14,7 +14,7 @@ let s:feature = {'name': 'issues'}
 function! s:feature.invoke(args)  " {{{2
   let [user, repos] = 2 == len(a:args) ? a:args : [g:github#user, a:args[0]]
   let f = self.new(user, repos)
-  call f.open()
+  call f.start()
 endfunction
 
 
@@ -32,7 +32,7 @@ endfunction
 
 
 
-function! s:feature.open()  " {{{2
+function! s:feature.start()  " {{{2
   " TODO: Opener is made customizable.
   new
   let b:github_issues = self
