@@ -47,12 +47,12 @@ FUNCTIONS					*github-functions*
 CUSTOMIZING					*github-customizing*
 
 g:github#user					*g:github#user*
-			User name in github.  If omitted, Initialized with
+			User name in github.  If omitted, initialized with
 			following command. >
 			git config --global github.user
 
 g:github#token					*g:github#token*
-			API token in github.  If omitted, Initialized with
+			API token in github.  If omitted, initialized with
 			following command. >
 			git config --global github.token
 
