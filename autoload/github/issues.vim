@@ -46,6 +46,7 @@ function! s:feature.start()  " {{{2
   endfor
 
   setlocal nomodifiable readonly
+  1
 
   let b:github_issues_list_changenr = changenr()
 
@@ -77,6 +78,7 @@ function! s:feature.open_issue(order)  " {{{2
   silent put =self.issue_layout(issue)
 
   setlocal nomodifiable readonly
+  1
 endfunction
 
 
