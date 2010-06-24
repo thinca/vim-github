@@ -46,6 +46,7 @@ function! s:feature.start()  " {{{2
   endfor
 
   setlocal nomodifiable readonly
+  setlocal filetype=github-issues
 endfunction
 
 
