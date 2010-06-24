@@ -37,13 +37,13 @@ endfunction
 
 
 " Options.  {{{1
-if !exists('github#user')  " {{{2
-  let github#user =
+if !exists('g:github#user')  " {{{2
+  let g:github#user =
   \   matchstr(system('git config --global github.user'), '\w*')
 endif
 
-if !exists('github#token')  " {{{2
-  let github#token =
+if !exists('g:github#token')  " {{{2
+  let g:github#token =
   \   matchstr(system('git config --global github.token'), '\w*')
 endif
 
