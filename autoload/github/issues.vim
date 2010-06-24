@@ -23,8 +23,8 @@ function! s:feature.new(user, repos)  " {{{2
   let obj = copy(self)
   let [obj.user, obj.repos] = [a:user, a:repos]
 
-  let open = s:connect('list', a:user, a:repos, 'open')
-  let closed = s:connect('list', a:user, a:repos, 'closed')
+  let open = obj.connect('list', 'open')
+  let closed = obj.connect('list', 'closed')
 
   let obj.issues = open.issues + closed.issues
   return obj
@@ -55,10 +55,10 @@ endfunction
 
 
 
-function! s:connect(action, user, repos, ...)  " {{{2
+function! s:feature.connect(action, ...)  " {{{2
   let params = a:0 ? '/' . join(a:000, '/') : ''
   return github#connect(printf('/issues/%s/%s/%s%s',
-  \ a:action, a:user, a:repos, params))
+  \ a:action, self.user, self.repos, params))
 endfunction
 
 
