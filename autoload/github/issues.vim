@@ -46,7 +46,31 @@ function! s:feature.start()  " {{{2
   endfor
 
   setlocal nomodifiable readonly
+
+  nnoremap <buffer> <silent> <Plug>(github-issues-open-issue)
+  \        :<C-u>call b:github_issues.open_issue(line('.') - 3)<CR>
+
+
+  silent! nmap <unique> <CR> <Plug>(github-issues-open-issue)
+
+
   setlocal filetype=github-issues
+endfunction
+
+
+
+function! s:feature.open_issue(order)  " {{{2
+  let issue = self.issues[a:order]
+  if type(issue.comments) == type(0)
+    let issue.comments = self.connect('comments', issue.number).comments
+  endif
+
+  setlocal modifiable noreadonly
+
+  silent 3,$ delete _
+  silent put =self.issue_layout(issue)
+
+  setlocal nomodifiable readonly
 endfunction
 
 
@@ -54,6 +78,32 @@ endfunction
 function! s:feature.line_format(issue)  " {{{2
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
   \     join(map(a:issue.labels, '"[".v:val."]"'), ''), a:issue.title)
+endfunction
+
+
+
+function! s:feature.issue_layout(issue)  " {{{2
+  let i = a:issue
+  let lines = [
+  \ i.number . ': ' . i.title,
+  \ 'state: ' . i.state,
+  \ 'user: ' . i.user,
+  \ 'created: ' . i.created_at,
+  \ 'updated: ' . i.updated_at,
+  \ '',
+  \ ]
+  let lines += split(i.body, '\r\?\n') + ['', '']
+
+  for c in i.comments
+    let lines += [
+    \ '------------------------------------------------------------',
+    \ '  ' . c.user . ' ' . c.created_at,
+    \ '',
+    \ ]
+    let lines += map(split(c.body, '\r\?\n'), '"  " . v:val')
+  endfor
+
+  return lines
 endfunction
 
 
