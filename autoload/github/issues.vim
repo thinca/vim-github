@@ -44,6 +44,8 @@ function! s:feature.start()  " {{{2
   for issue in self.issues
     $put =self.line_format(issue)
   endfor
+
+  setlocal nomodifiable readonly
 endfunction
 
 
