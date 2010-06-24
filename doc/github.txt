@@ -23,6 +23,8 @@ INTRODUCTION					*github-introduction*
 
 Requirements:
 - Vim 7.2 or later
+- curl
+- git
 
 Latest version:
 http://github.com/thinca/vim-github
