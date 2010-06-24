@@ -38,11 +38,13 @@ endfunction
 
 " Options.  {{{1
 if !exists('github#user')  " {{{2
-  let github#user = system('git config --global github.user')
+  let github#user =
+  \   matchstr(system('git config --global github.user'), '\w*')
 endif
 
 if !exists('github#token')  " {{{2
-  let github#token = system('git config --global github.token')
+  let github#token =
+  \   matchstr(system('git config --global github.token'), '\w*')
 endif
 
 
