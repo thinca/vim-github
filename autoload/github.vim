@@ -21,11 +21,40 @@ endfunction
 
 " Interfaces.  {{{1
 function! github#connect(path, ...)  " {{{2
-  let raw = a:0 && a:1
+  let params = {}
+  let raw = 0
+  for a in a:000
+    if type(a) == type(0)
+      raw = a
+    elseif type(a) == type({})
+      call extend(params, a)
+    endif
+  endfor
+
   let protocol = g:github#use_https ? 'https' : 'http'
-  let res = system(printf('%s -s -F "login=%s" -F "token=%s" %s://%s%s%s',
-  \ g:github#curl_cmd, g:github#user, g:github#token,
-  \ protocol, s:domain, s:base_path, a:path))
+
+  let files = []
+
+  try
+    let param = printf('-F "login=%s" -F "token=%s"',
+    \                  g:github#user, g:github#token)
+
+    for [key, val] in items(params)
+      let f = tempname()
+      call add(files, f)
+      call writefile(split(val, "\n"), f)
+      let param .= printf(' -F "%s=@%s"', key, f)
+    endfor
+
+    let res = system(printf('%s -s %s %s://%s%s%s',
+    \ g:github#curl_cmd, param,
+    \ protocol, s:domain, s:base_path, a:path))
+  finally
+    for f in files
+      call delete(f)
+    endfor
+  endtry
+
   return raw ? res : s:parse_json(res)
 endfunction
 
