@@ -12,11 +12,12 @@ let s:base_path = '/api/v2/json'
 
 
 " Interfaces.  {{{1
-function! github#connect(path)  " {{{2
+function! github#connect(path, ...)  " {{{2
+  let raw = a:0 && a:1
   let protocol = g:github#use_https ? 'https' : 'http'
-  return s:parse_json(system(
-  \ printf('curl -s -F "login=%s" -F "token=%s" %s://%s%s%s',
-  \ g:github#user, g:github#token, protocol, s:domain, s:base_path, a:path)))
+  let res = system(printf('curl -s -F "login=%s" -F "token=%s" %s://%s%s%s',
+  \ g:github#user, g:github#token, protocol, s:domain, s:base_path, a:path))
+  return raw ? res : s:parse_json(res)
 endfunction
 
 
