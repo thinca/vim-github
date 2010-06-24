@@ -10,6 +10,16 @@ set cpo&vim
 let s:domain = 'github.com'
 let s:base_path = '/api/v2/json'
 
+
+" Interfaces.  {{{1
+function! github#connect(path)  " {{{2
+  return s:parse_json(system(
+  \ printf('curl -s -F "login=%s" -F "token=%s" http://%s%s%s',
+  \ g:github#user, g:github#token, s:domain, s:base_path, a:path)))
+endfunction
+
+
+
 " JSON Utilities.  {{{1
 function! s:validate_json(str)  " {{{2
   " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm
