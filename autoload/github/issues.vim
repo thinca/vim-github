@@ -47,11 +47,17 @@ function! s:feature.start()  " {{{2
 
   setlocal nomodifiable readonly
 
+  let b:github_issues_list_changenr = changenr()
+
   nnoremap <buffer> <silent> <Plug>(github-issues-open-issue)
   \        :<C-u>call b:github_issues.open_issue(line('.') - 3)<CR>
+  nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
+  \        :<C-u>silent execute 'undo' b:github_issues_list_changenr<CR>
 
 
   silent! nmap <unique> <CR> <Plug>(github-issues-open-issue)
+  silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
+  silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
 
 
   setlocal filetype=github-issues
