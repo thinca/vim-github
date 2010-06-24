@@ -11,6 +11,14 @@ let s:domain = 'github.com'
 let s:base_path = '/api/v2/json'
 
 
+" Features manager.  {{{1
+let s:features = {}
+
+function! github#register(feature)  " {{{2
+  let s:features[a:feature.name] = a:feature
+endfunction
+
+
 " Interfaces.  {{{1
 function! github#connect(path, ...)  " {{{2
   let raw = a:0 && a:1
@@ -62,6 +70,22 @@ endif
 if !exists('g:github#use_https')  " {{{2
   let g:github#use_https = 0
 endif
+
+
+
+" Register the default features. {{{1
+function! s:register_defaults()  " {{{2
+  let list = split(globpath(&runtimepath, 'autoload/github/*.vim'), "\n")
+  for name in map(list, 'fnamemodify(v:val, ":t:r")')
+    try
+      call github#register(github#{name}#new())
+    catch /:E\%(117\|716\):/
+    endtry
+  endfor
+endfunction
+
+call s:register_defaults()
+
 
 
 let &cpo = s:save_cpo
