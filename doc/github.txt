@@ -43,6 +43,9 @@ COMMANDS					*github-commands*
 ------------------------------------------------------------------------------
 FUNCTIONS					*github-functions*
 
+github#connect({path} [, {param}] [, {raw}])	*github#connect()*
+			Connect to the github.
+
 
 
 ==============================================================================
