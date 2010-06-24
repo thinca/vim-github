@@ -23,8 +23,9 @@ endfunction
 function! github#connect(path, ...)  " {{{2
   let raw = a:0 && a:1
   let protocol = g:github#use_https ? 'https' : 'http'
-  let res = system(printf('curl -s -F "login=%s" -F "token=%s" %s://%s%s%s',
-  \ g:github#user, g:github#token, protocol, s:domain, s:base_path, a:path))
+  let res = system(printf('%s -s -F "login=%s" -F "token=%s" %s://%s%s%s',
+  \ g:github#curl_cmd, g:github#user, g:github#token,
+  \ protocol, s:domain, s:base_path, a:path))
   return raw ? res : s:parse_json(res)
 endfunction
 
@@ -80,6 +81,10 @@ endif
 if !exists('g:github#token')  " {{{2
   let g:github#token =
   \   matchstr(system('git config --global github.token'), '\w*')
+endif
+
+if !exists('g:github#curl_cmd')  " {{{2
+  let g:github#curl_cmd = 'curl'
 endif
 
 if !exists('g:github#use_https')  " {{{2

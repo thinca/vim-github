@@ -58,6 +58,10 @@ g:github#token					*g:github#token*
 			following command. >
 			git config --global github.token
 
+g:github#curl_cmd				*g:github#curl_cmd*
+			curl command.
+			The default value is "curl".
+
 g:github#use_https				*g:github#use_https*
 			Use https to connect to github.
 			The default value is false.
