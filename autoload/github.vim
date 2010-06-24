@@ -16,8 +16,8 @@ function! s:validate_json(str)  " {{{2
 
   let str = a:str
   let str = substitute(str, '\\\%(["\\\/bfnrt]\|u[0-9a-fA-F]{4}\)', '\@', 'g')
-  let str = substitute(str, '"[^\"\\\n\r]*\"\|true\|false\|null\|-\{-}\d\+' .
-  \                    '\%(\.\d*\)\{-}\%([eE][+\-]\{-}\d\+\)\{-}', ']', 'g')
+  let str = substitute(str, '"[^\"\\\n\r]*\"\|true\|false\|null\|-\?\d\+' .
+  \                    '\%(\.\d*\)\?\%([eE][+\-]\{-}\d\+\)\?', ']', 'g')
   let str = substitute(str, '\%(^\|:\|,\)\%(\s*\[\)\+', '', 'g')
   return str =~ '^[\],:{} \t\n]*$'
 endfunction
