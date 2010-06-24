@@ -13,12 +13,21 @@ let s:feature = {'name': 'issues'}
 
 function! s:feature.invoke(args)  " {{{2
   let [user, repos] = 2 == len(a:args) ? a:args : [g:github#user, a:args[0]]
-  let open = s:connect('list', user, repos, 'open')
-  let closed = s:connect('list', user, repos, 'closed')
+  let f = self.new(user, repos)
+  call f.open()
+endfunction
 
-  let [self.user, self.repos] = [user, repos]
-  let self.issues = open.issues + closed.issues
-  call self.open()
+
+
+function! s:feature.new(user, repos)  " {{{2
+  let obj = copy(self)
+  let [obj.user, obj.repos] = [a:user, a:repos]
+
+  let open = s:connect('list', a:user, a:repos, 'open')
+  let closed = s:connect('list', a:user, a:repos, 'closed')
+
+  let obj.issues = open.issues + closed.issues
+  return obj
 endfunction
 
 
