@@ -49,6 +49,44 @@ github#connect({path} [, {param}] [, {raw}])	*github#connect()*
 
 
 ==============================================================================
+FEATURES					*github-features*
+
+
+
+------------------------------------------------------------------------------
+ISSUES						*github-feature-issues*
+
+Arguments
+---------
+Arguments for the |:Github| command.
+
+issues [user] {repos}
+			Open the issue list.
+
+issues [user] {repos} {id}
+			Open the issue.
+
+issues [user] {repos} new
+			Open the buffer to open a new issue.
+
+Editing an issue
+----------------
+The buffer to edit an issue is following format. >
+
+	Title
+	label1, label2,
+
+	Body...
+
+The first line is treated as title.
+If the second line is not empty, it is treated as label list.  This is
+omitable.
+Since the third line is treated as body.  The blank lines at the header of
+body are ignored.
+
+
+
+==============================================================================
 CUSTOMIZING					*github-customizing*
 
 g:github#user					*g:github#user*
