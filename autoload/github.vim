@@ -13,6 +13,13 @@ let s:base_path = '/api/v2/json'
 
 
 let s:prototype = {}  " {{{1
+function! s:prototype.new(...)  " {{{2
+  let obj = copy(self)
+  call call(obj.initialize, a:000, obj)
+  return obj
+endfunction
+function! s:prototype.initialize()  " {{{2
+endfunction
 function! s:prototype.header()  " {{{2
   return ''
 endfunction

@@ -30,13 +30,10 @@ endfunction
 
 
 
-function! s:feature.new(user, repos)  " {{{2
-  let obj = copy(self)
-  let [obj.user, obj.repos] = [a:user, a:repos]
+function! s:feature.initialize(user, repos)  " {{{2
+  let [self.user, self.repos] = [a:user, a:repos]
 
-  call obj.fetch()
-
-  return obj
+  call self.fetch()
 endfunction
 
 
