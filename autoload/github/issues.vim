@@ -38,6 +38,19 @@ endfunction
 
 
 
+function! s:feature.opened()  " {{{2
+  nnoremap <buffer> <silent> <Plug>(github-issues-action)
+  \        :<C-u>call b:github_issues.action()<CR>
+  nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
+  \        :<C-u>call b:github_issues.open('issue_list')<CR>
+
+  silent! nmap <unique> <CR> <Plug>(github-issues-action)
+  silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
+  silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
+endfunction
+
+
+
 " Model.  {{{1
 function! s:feature.fetch()  " {{{2
   let open = self.connect('list', 'open')
@@ -60,16 +73,6 @@ function! s:feature.issue_list()  " {{{2
   for issue in self.issues
     silent $put =self.line_format(issue)
   endfor
-
-  nnoremap <buffer> <silent> <Plug>(github-issues-action)
-  \        :<C-u>call b:github_issues.action()<CR>
-  nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
-  \        :<C-u>call b:github_issues.open('issue_list')<CR>
-
-
-  silent! nmap <unique> <CR> <Plug>(github-issues-action)
-  silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
-  silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
 endfunction
 
 
