@@ -159,6 +159,12 @@ endfunction
 
 
 
+function! github#complete(lead, cmd, pos)  " {{{2
+  return []
+endfunction
+
+
+
 " JSON Utilities.  {{{1
 function! s:validate_json(str)  " {{{2
   " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm

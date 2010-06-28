@@ -14,7 +14,8 @@ set cpo&vim
 
 
 
-command! -nargs=+ Github call github#invoke(<q-args>)
+command! -nargs=+ -complete=customlist,github#complete
+\        Github call github#invoke(<q-args>)
 
 
 
