@@ -47,6 +47,7 @@ function! s:prototype.open(with, ...)  " {{{2
     setlocal nobuflisted
     setlocal buftype=nofile noswapfile bufhidden=wipe
     setlocal nonumber nolist nowrap
+    let &l:filetype = ft
 
     call self.opened()
   else
@@ -59,8 +60,6 @@ function! s:prototype.open(with, ...)  " {{{2
 
   setlocal nomodifiable readonly
   1
-
-  let &l:filetype = ft
 endfunction
 
 
