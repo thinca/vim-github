@@ -127,7 +127,9 @@ endfunction
 
 
 function! s:feature.action()  " {{{2
-  call self.open('view_issue', line('.') - 3)
+  if b:github_issues_view ==# 'view_issue_list'
+    call self.open('view_issue', line('.') - 3)
+  endif
 endfunction
 
 
