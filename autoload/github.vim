@@ -55,6 +55,11 @@ function! github#connect(path, ...)  " {{{2
     endfor
   endtry
 
+  let r = iconv(res, 'utf-8', &encoding)
+  if r != ''
+    let res = r
+  endif
+
   return raw ? res : s:parse_json(res)
 endfunction
 
