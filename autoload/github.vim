@@ -20,6 +20,8 @@ function! s:prototype.new(...)  " {{{2
 endfunction
 function! s:prototype.initialize()  " {{{2
 endfunction
+function! s:prototype.opened()  " {{{2
+endfunction
 function! s:prototype.header()  " {{{2
   return ''
 endfunction
@@ -46,6 +48,7 @@ function! s:prototype.open(with, ...)  " {{{2
     setlocal buftype=nofile noswapfile bufhidden=wipe
     setlocal nonumber nolist nowrap
 
+    call self.opened()
   else
     setlocal modifiable noreadonly
     silent % delete _
