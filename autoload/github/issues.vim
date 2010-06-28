@@ -34,12 +34,20 @@ function! s:feature.new(user, repos)  " {{{2
   let obj = copy(self)
   let [obj.user, obj.repos] = [a:user, a:repos]
 
-  let open = obj.connect('list', 'open')
-  let closed = obj.connect('list', 'closed')
+  call obj.fetch()
 
-  let obj.issues = open.issues + closed.issues
-  call obj.sort()
   return obj
+endfunction
+
+
+
+" Model.  {{{1
+function! s:feature.fetch()  " {{{2
+  let open = self.connect('list', 'open')
+  let closed = self.connect('list', 'closed')
+
+  let self.issues = open.issues + closed.issues
+  call self.sort()
 endfunction
 
 
