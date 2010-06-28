@@ -15,8 +15,17 @@ function! s:feature.invoke(args)  " {{{2
   let repos = a:args[0]
   let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
   \                                    : [g:github#user, repos]
+
   let f = self.new(user, repos)
-  call f.open('issue_list')
+
+  if len(a:args) == 1
+    call f.open('issue_list')
+  else
+    let id = a:args[1]
+    if id =~ '^\d\+$'
+      call f.open('open_issue', id - 1)
+    endif
+  endif
 endfunction
 
 
@@ -99,7 +108,7 @@ function! s:feature.open_issue(order)  " {{{2
     let issue.comments = self.connect('comments', issue.number).comments
   endif
 
-  silent put =self.issue_layout(issue)
+  silent $put =self.issue_layout(issue)
 endfunction
 
 
