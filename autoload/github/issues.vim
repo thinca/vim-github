@@ -44,6 +44,7 @@ endfunction
 
 
 
+" View.  {{{1
 function! s:feature.issue_list()  " {{{2
   silent 0put =printf('Github Issues - %s/%s', self.user, self.repos)
   for issue in self.issues
@@ -108,6 +109,7 @@ endfunction
 
 
 
+" Control.  {{{1
 function! s:feature.sort()  " {{{2
   call sort(self.issues, s:func('compare'))
 endfunction
@@ -128,6 +130,7 @@ endfunction
 
 
 
+" Misc.  {{{1
 function! s:compare(a, b)  " {{{2
   " TODO: Be made customizable.
   return a:a.number - a:b.number
