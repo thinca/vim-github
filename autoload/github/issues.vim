@@ -50,12 +50,10 @@ function! s:feature.issue_list()  " {{{2
     silent $put =self.line_format(issue)
   endfor
 
-  let b:github_issues_list_changenr = changenr()
-
   nnoremap <buffer> <silent> <Plug>(github-issues-action)
   \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
-  \        :<C-u>silent execute 'undo' b:github_issues_list_changenr<CR>
+  \        :<C-u>call b:github_issues.open('issue_list')<CR>
 
 
   silent! nmap <unique> <CR> <Plug>(github-issues-action)
