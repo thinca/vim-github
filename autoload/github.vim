@@ -160,7 +160,7 @@ endfunction
 
 
 function! github#complete(lead, cmd, pos)  " {{{2
-  return []
+  return keys(s:features)
 endfunction
 
 
