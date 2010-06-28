@@ -12,7 +12,9 @@ let s:feature = {'name': 'issues'}
 
 
 function! s:feature.invoke(args)  " {{{2
-  let [user, repos] = 2 == len(a:args) ? a:args : [g:github#user, a:args[0]]
+  let repos = a:args[0]
+  let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
+  \                                    : [g:github#user, repos]
   let f = self.new(user, repos)
   call f.open('issue_list')
 endfunction

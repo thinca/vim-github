@@ -60,14 +60,18 @@ Arguments
 ---------
 Arguments for the |:Github| command.
 
-issues [user] {repos}
+issues {repos}
 			Open the issue list.
 
-issues [user] {repos} {id}
+issues {repos} {id}
 			Open the issue.
 
-issues [user] {repos} new
+issues {repos} new
 			Open the buffer to open a new issue.
+
+{repos} is just a own repository name or the form like "{user}/{repos}".
+
+
 
 Editing an issue
 ----------------
