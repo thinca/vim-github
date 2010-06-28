@@ -52,13 +52,13 @@ function! s:feature.issue_list()  " {{{2
 
   let b:github_issues_list_changenr = changenr()
 
-  nnoremap <buffer> <silent> <Plug>(github-issues-open-issue)
-  \        :<C-u>call b:github_issues.open('open_issue', line('.') - 3)<CR>
+  nnoremap <buffer> <silent> <Plug>(github-issues-action)
+  \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
   \        :<C-u>silent execute 'undo' b:github_issues_list_changenr<CR>
 
 
-  silent! nmap <unique> <CR> <Plug>(github-issues-open-issue)
+  silent! nmap <unique> <CR> <Plug>(github-issues-action)
   silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
   silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
 endfunction
@@ -112,6 +112,12 @@ endfunction
 
 function! s:feature.sort()  " {{{2
   call sort(self.issues, s:func('compare'))
+endfunction
+
+
+
+function! s:feature.action()  " {{{2
+  call self.open('open_issue', line('.') - 3)
 endfunction
 
 
