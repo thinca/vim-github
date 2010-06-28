@@ -44,47 +44,10 @@ endfunction
 
 
 
-function! s:feature.open(with, ...)  " {{{2
-  let bufnr = 0
-  for i in range(0, winnr('$'))
-    let n = winbufnr(i)
-    if getbufvar(n, '&filetype') =~# '^github-issues'
-      if i != 0
-        execute i 'wincmd w'
-      endif
-      let bufnr = n
-      break
-    endif
-  endfor
-
-  if bufnr == 0
-    " TODO: Opener is made customizable.
-    new
-    let b:github_issues = self
-
-    setlocal nobuflisted
-    setlocal buftype=nofile noswapfile bufhidden=wipe
-    setlocal nonumber nolist nowrap
-
-  else
-    setlocal modifiable noreadonly
-    silent % delete _
-  endif
-
-  0put =printf('Github Issues - %s/%s', self.user, self.repos)
-  call call(self[a:with], a:000, self)
-
-  setlocal nomodifiable readonly
-  1
-
-  setlocal filetype=github-issues
-endfunction
-
-
-
 function! s:feature.issue_list()  " {{{2
+  silent 0put =printf('Github Issues - %s/%s', self.user, self.repos)
   for issue in self.issues
-    $put =self.line_format(issue)
+    silent $put =self.line_format(issue)
   endfor
 
   let b:github_issues_list_changenr = changenr()
@@ -108,6 +71,7 @@ function! s:feature.open_issue(order)  " {{{2
     let issue.comments = self.connect('comments', issue.number).comments
   endif
 
+  silent 0put =printf('Github Issues - %s/%s', self.user, self.repos)
   silent $put =self.issue_layout(issue)
 endfunction
 

@@ -11,11 +11,52 @@ let s:domain = 'github.com'
 let s:base_path = '/api/v2/json'
 
 
+
+let s:prototype = {}  " {{{1
+function! s:prototype.open(with, ...)  " {{{2
+  let ft = 'github-' . self.name
+  let bufnr = 0
+  for i in range(0, winnr('$'))
+    let n = winbufnr(i)
+    if getbufvar(n, '&filetype') ==# ft
+      if i != 0
+        execute i 'wincmd w'
+      endif
+      let bufnr = n
+      break
+    endif
+  endfor
+
+  if bufnr == 0
+    " TODO: Opener is made customizable.
+    new
+    let b:github_{self.name} = self
+
+    setlocal nobuflisted
+    setlocal buftype=nofile noswapfile bufhidden=wipe
+    setlocal nonumber nolist nowrap
+
+  else
+    setlocal modifiable noreadonly
+    silent % delete _
+  endif
+
+  call call(self[a:with], a:000, self)
+
+  setlocal nomodifiable readonly
+  1
+
+  let &l:filetype = ft
+endfunction
+
+
+
 " Features manager.  {{{1
 let s:features = {}
 
 function! github#register(feature)  " {{{2
-  let s:features[a:feature.name] = a:feature
+  let feature = extend(copy(s:prototype), a:feature)
+  let s:features[feature.name] = feature
 endfunction
 
 
