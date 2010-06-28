@@ -106,6 +106,30 @@ endfunction
 
 
 
+function! github#button()  " {{{2
+  return github#get_text_on_cursor('\[\[.\{-}\]\]')
+endfunction
+
+
+
+function! github#get_text_on_cursor(pat)  " {{{2
+  let line = getline('.')
+  let pos = col('.')
+  let s = 0
+  while s < pos
+    let [s, e] = [match(line, a:pat, s), matchend(line, a:pat, s)]
+    if s < 0
+      break
+    elseif s < pos && pos <= e
+      return line[s : e - 1]
+    endif
+    let s += 1
+  endwhile
+  return ''
+endfunction
+
+
+
 " Main commands.  {{{1
 function! github#invoke(argline)  " {{{2
   " The simplest implementation.
