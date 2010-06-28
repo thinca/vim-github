@@ -14,7 +14,7 @@ let s:feature = {'name': 'issues'}
 function! s:feature.invoke(args)  " {{{2
   let [user, repos] = 2 == len(a:args) ? a:args : [g:github#user, a:args[0]]
   let f = self.new(user, repos)
-  call f.start()
+  call f.open('issue_list')
 endfunction
 
 
@@ -32,26 +32,53 @@ endfunction
 
 
 
-function! s:feature.start()  " {{{2
-  " TODO: Opener is made customizable.
-  new
-  let b:github_issues = self
-
-  setlocal nobuflisted
-  setlocal buftype=nofile noswapfile bufhidden=wipe
-  setlocal nonumber nolist nowrap
-  0put =printf('Github Issues - %s/%s', self.user, self.repos)
-  for issue in self.issues
-    $put =self.line_format(issue)
+function! s:feature.open(with, ...)  " {{{2
+  let bufnr = 0
+  for i in range(0, winnr('$'))
+    let n = winbufnr(i)
+    if getbufvar(n, '&filetype') =~# '^github-issues'
+      if i != 0
+        execute i 'wincmd w'
+      endif
+      let bufnr = n
+      break
+    endif
   endfor
+
+  if bufnr == 0
+    " TODO: Opener is made customizable.
+    new
+    let b:github_issues = self
+
+    setlocal nobuflisted
+    setlocal buftype=nofile noswapfile bufhidden=wipe
+    setlocal nonumber nolist nowrap
+    0put =printf('Github Issues - %s/%s', self.user, self.repos)
+
+  else
+    setlocal modifiable noreadonly
+    silent 3,$ delete _
+  endif
+
+  call call(self[a:with], a:000, self)
 
   setlocal nomodifiable readonly
   1
 
+  setlocal filetype=github-issues
+endfunction
+
+
+
+function! s:feature.issue_list()  " {{{2
+  for issue in self.issues
+    $put =self.line_format(issue)
+  endfor
+
   let b:github_issues_list_changenr = changenr()
 
   nnoremap <buffer> <silent> <Plug>(github-issues-open-issue)
-  \        :<C-u>call b:github_issues.open_issue(line('.') - 3)<CR>
+  \        :<C-u>call b:github_issues.open('open_issue', line('.') - 3)<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
   \        :<C-u>silent execute 'undo' b:github_issues_list_changenr<CR>
 
@@ -59,9 +86,6 @@ function! s:feature.start()  " {{{2
   silent! nmap <unique> <CR> <Plug>(github-issues-open-issue)
   silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
   silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
-
-
-  setlocal filetype=github-issues
 endfunction
 
 
@@ -72,13 +96,7 @@ function! s:feature.open_issue(order)  " {{{2
     let issue.comments = self.connect('comments', issue.number).comments
   endif
 
-  setlocal modifiable noreadonly
-
-  silent 3,$ delete _
   silent put =self.issue_layout(issue)
-
-  setlocal nomodifiable readonly
-  1
 endfunction
 
 
