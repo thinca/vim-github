@@ -45,8 +45,13 @@ endfunction
 
 
 " View.  {{{1
+function! s:feature.header()  " {{{2
+  return printf('Github Issues - %s/%s', self.user, self.repos)
+endfunction
+
+
+
 function! s:feature.issue_list()  " {{{2
-  silent 0put =printf('Github Issues - %s/%s', self.user, self.repos)
   for issue in self.issues
     silent $put =self.line_format(issue)
   endfor
@@ -70,7 +75,6 @@ function! s:feature.open_issue(order)  " {{{2
     let issue.comments = self.connect('comments', issue.number).comments
   endif
 
-  silent 0put =printf('Github Issues - %s/%s', self.user, self.repos)
   silent $put =self.issue_layout(issue)
 endfunction
 

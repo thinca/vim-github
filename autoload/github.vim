@@ -13,6 +13,9 @@ let s:base_path = '/api/v2/json'
 
 
 let s:prototype = {}  " {{{1
+function! s:prototype.header()  " {{{2
+  return ''
+endfunction
 function! s:prototype.open(with, ...)  " {{{2
   let ft = 'github-' . self.name
   let bufnr = 0
@@ -41,6 +44,7 @@ function! s:prototype.open(with, ...)  " {{{2
     silent % delete _
   endif
 
+  silent 0put =self.header()
   call call(self[a:with], a:000, self)
 
   setlocal nomodifiable readonly
