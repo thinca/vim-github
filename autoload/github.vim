@@ -98,7 +98,7 @@ function! github#connect(path, ...)  " {{{2
       let f = tempname()
       call add(files, f)
       call writefile(split(val, "\n"), f)
-      let param .= printf(' -F "%s=@%s"', key, f)
+      let param .= printf(' -F "%s=<%s"', key, f)
     endfor
 
     let res = system(printf('%s -s %s %s://%s%s%s',
