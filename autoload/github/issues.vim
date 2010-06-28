@@ -65,13 +65,13 @@ function! s:feature.open(with, ...)  " {{{2
     setlocal nobuflisted
     setlocal buftype=nofile noswapfile bufhidden=wipe
     setlocal nonumber nolist nowrap
-    0put =printf('Github Issues - %s/%s', self.user, self.repos)
 
   else
     setlocal modifiable noreadonly
-    silent 3,$ delete _
+    silent % delete _
   endif
 
+  0put =printf('Github Issues - %s/%s', self.user, self.repos)
   call call(self[a:with], a:000, self)
 
   setlocal nomodifiable readonly
