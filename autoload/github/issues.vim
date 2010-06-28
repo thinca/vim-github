@@ -19,11 +19,11 @@ function! s:feature.invoke(args)  " {{{2
   let f = self.new(user, repos)
 
   if len(a:args) == 1
-    call f.open('issue_list')
+    call f.open('view_issue_list')
   else
     let id = a:args[1]
     if id =~ '^\d\+$'
-      call f.open('open_issue', id - 1)
+      call f.open('view_issue', id - 1)
     endif
   endif
 endfunction
@@ -42,7 +42,7 @@ function! s:feature.opened()  " {{{2
   nnoremap <buffer> <silent> <Plug>(github-issues-action)
   \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
-  \        :<C-u>call b:github_issues.open('issue_list')<CR>
+  \        :<C-u>call b:github_issues.open('view_issue_list')<CR>
 
   silent! nmap <unique> <CR> <Plug>(github-issues-action)
   silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
@@ -69,13 +69,13 @@ endfunction
 
 
 
-function! s:feature.issue_list()  " {{{2
+function! s:feature.view_issue_list()  " {{{2
   return map(copy(self.issues), 'self.line_format(v:val)')
 endfunction
 
 
 
-function! s:feature.open_issue(order)  " {{{2
+function! s:feature.view_issue(order)  " {{{2
   let issue = self.issues[a:order]
   if type(issue.comments) == type(0)
     let issue.comments = self.connect('comments', issue.number).comments
@@ -127,7 +127,7 @@ endfunction
 
 
 function! s:feature.action()  " {{{2
-  call self.open('open_issue', line('.') - 3)
+  call self.open('view_issue', line('.') - 3)
 endfunction
 
 
