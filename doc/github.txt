@@ -77,15 +77,17 @@ Editing an issue
 ----------------
 The buffer to edit an issue is following format. >
 
+	[[POST]]
 	Title
 	label1, label2,
 
 	Body...
 
-The first line is treated as title.
-If the second line is not empty, it is treated as label list.  This is
+The first line is a button to post this issue.
+The second line is treated as title.
+If the third line is not empty, it is treated as label list.  This is
 omitable.
-Since the third line is treated as body.  The blank lines at the header of
+Since the fourth line is treated as body.  The blank lines at the header of
 body are ignored.
 
 
