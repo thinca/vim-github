@@ -55,7 +55,7 @@ function! s:prototype.open(with, ...)  " {{{2
   endif
 
   silent 0put =self.header()
-  call call(self[a:with], a:000, self)
+  silent $put =call(self[a:with], a:000, self)
 
   setlocal nomodifiable readonly
   1

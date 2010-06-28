@@ -70,9 +70,7 @@ endfunction
 
 
 function! s:feature.issue_list()  " {{{2
-  for issue in self.issues
-    silent $put =self.line_format(issue)
-  endfor
+  return map(copy(self.issues), 'self.line_format(v:val)')
 endfunction
 
 
@@ -83,7 +81,7 @@ function! s:feature.open_issue(order)  " {{{2
     let issue.comments = self.connect('comments', issue.number).comments
   endif
 
-  silent $put =self.issue_layout(issue)
+  return self.issue_layout(issue)
 endfunction
 
 
