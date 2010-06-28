@@ -29,6 +29,7 @@ function! s:feature.new(user, repos)  " {{{2
   let closed = obj.connect('list', 'closed')
 
   let obj.issues = open.issues + closed.issues
+  call obj.sort()
   return obj
 endfunction
 
@@ -136,10 +137,29 @@ endfunction
 
 
 
+function! s:feature.sort()  " {{{2
+  call sort(self.issues, s:func('compare'))
+endfunction
+
+
+
 function! s:feature.connect(action, ...)  " {{{2
   let params = a:0 ? '/' . join(a:000, '/') : ''
   return github#connect(printf('/issues/%s/%s/%s%s',
   \ a:action, self.user, self.repos, params))
+endfunction
+
+
+
+function! s:compare(a, b)  " {{{2
+  " TODO: Be made customizable.
+  return a:a.number - a:b.number
+endfunction
+
+
+
+function! s:func(name)  "{{{2
+  return function(matchstr(expand('<sfile>'), '<SNR>\d\+_\zefunc$') . a:name)
 endfunction
 
 
