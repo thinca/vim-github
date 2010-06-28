@@ -55,6 +55,7 @@ function! s:prototype.open(with, ...)  " {{{2
     silent % delete _
   endif
 
+  let b:github_{self.name}_view = a:with
   silent 0put =self.header()
   silent $put =call(self[a:with], a:000, self)
 
