@@ -86,6 +86,19 @@ endfunction
 
 
 
+function! s:feature.edit_issue(...)  " {{{2
+  let [title, labels, body] = a:0 ?
+  \ [a:0.title, a:0.labels, a:0.body] :
+  \ ['', [], "\n"]
+  let text = ['[[POST]]', 'title: ' . title]
+  if !empty(labels)
+    call add(text, 'labels: ' . join(labels, ', ')
+  endif
+  return text + ['body:'] + split(body, '\r\?\n', 1)
+endfunction
+
+
+
 function! s:feature.line_format(issue)  " {{{2
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
   \     join(map(copy(a:issue.labels), '"[".v:val."]"'), ''), a:issue.title)
