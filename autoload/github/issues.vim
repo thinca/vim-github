@@ -103,7 +103,8 @@ endfunction
 
 function! s:feature.line_format(issue)  " {{{2
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
-  \     join(map(copy(a:issue.labels), '"[".v:val."]"'), ''), a:issue.title)
+  \      join(map(copy(a:issue.labels), '"[".v:val."]"'), ''),
+  \      substitute(a:issue.title, '\n', '', 'g'))
 endfunction
 
 
