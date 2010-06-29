@@ -39,9 +39,11 @@ function! s:prototype.view(with, ...)  " {{{2
     endif
   endfor
 
+  let name = 'view_' . a:with
   if bufnr == 0
     " TODO: Opener is made customizable.
-    new
+    " FIXME: This buffer name is tentative.
+    new `=printf('[github-%s:%s]', self.name, name)`
 
     setlocal nobuflisted
     setlocal buftype=nofile noswapfile bufhidden=wipe
@@ -55,7 +57,6 @@ function! s:prototype.view(with, ...)  " {{{2
   endif
 
   let b:github_{self.name} = self
-  let name = 'view_' . a:with
   let b:github_{self.name}_buf = name
 
   silent 0put =self.header()
@@ -66,8 +67,11 @@ function! s:prototype.view(with, ...)  " {{{2
 endfunction
 function! s:prototype.edit(template, ...)  " {{{2
   let ft = 'github-' . self.name
+  let name = 'edit_' . a:template
+
   " TODO: Opener is made customizable.
-  new
+  " FIXME: This buffer name is tentative.
+  new `=printf('[github-%s:%s]', self.name, name)`
   let b:github_{self.name} = self
 
   setlocal nobuflisted
@@ -76,7 +80,6 @@ function! s:prototype.edit(template, ...)  " {{{2
 
   call self.opened()
 
-  let name = 'edit_' . a:template
   let b:github_{self.name}_buf = name
   silent 0put =self.header()
   silent $put =call(self[name], a:000, self)
