@@ -148,7 +148,8 @@ function! s:feature.action()  " {{{2
     if button ==# '[[New Issue]]'
       call self.edit('issue')
     else
-      call self.view('issue', line('.') - 3)
+      " FIXME: Accurate issue number.
+      call self.view('issue', line('.') - 4)
     endif
   elseif b:github_issues_buf ==# 'edit_issue'
     if button ==# '[[POST]]'
