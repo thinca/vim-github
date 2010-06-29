@@ -79,7 +79,7 @@ function! github#connect(path, ...)  " {{{2
   let params = {}
   let path = a:path
   let raw = 0
-  for a in a:000
+  for a in github#flatten(a:000)
     if type(a) == type(0)
       raw = a
     elseif type(a) == type('')
