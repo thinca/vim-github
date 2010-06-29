@@ -138,10 +138,7 @@ function! github#connect(path, ...)  " {{{2
     endfor
   endtry
 
-  let r = iconv(res, 'utf-8', &encoding)
-  if r != ''
-    let res = r
-  endif
+  let r = s:iconv(res, 'utf-8', &encoding)
 
   return raw ? res : s:parse_json(res)
 endfunction
@@ -208,7 +205,7 @@ endfunction
 
 
 
-" JSON Utilities.  {{{1
+" JSON and others utilities.  {{{1
 function! s:validate_json(str)  " {{{2
   " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm
 
@@ -230,6 +227,16 @@ function! s:parse_json(json)  " {{{2
   let l:false = 0
   let l:null = 0
   return eval(a:json)
+endfunction
+
+
+
+function! s:iconv(expr, from, to)  " {{{2
+  if a:from ==# a:to || a:from == '' || a:to == ''
+    return a:expr
+  endif
+  let result = iconv(a:expr, a:from, a:to)
+  return result != '' ? result : a:expr
 endfunction
 
 
