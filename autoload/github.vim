@@ -125,7 +125,7 @@ function! github#connect(path, ...)  " {{{2
     for [key, val] in items(params)
       let f = tempname()
       call add(files, f)
-      call writefile(split(val, "\n", 1), f, 'b')
+      call writefile(split(s:iconv(val, &encoding, 'utf-8'), "\n", 1), f, 'b')
       let param .= printf(' -F "%s=<%s"', key, f)
     endfor
 
