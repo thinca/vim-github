@@ -88,6 +88,7 @@ function! github#connect(path, ...)  " {{{2
     elseif type(a) == type({})
       call extend(params, a)
     endif
+    unlet a
   endfor
 
   let protocol = g:github#use_https ? 'https' : 'http'
