@@ -77,10 +77,13 @@ endfunction
 " Interfaces.  {{{1
 function! github#connect(path, ...)  " {{{2
   let params = {}
+  let path = a:path
   let raw = 0
   for a in a:000
     if type(a) == type(0)
       raw = a
+    elseif type(a) == type('')
+      let path .= '/' . a
     elseif type(a) == type({})
       call extend(params, a)
     endif
@@ -103,7 +106,7 @@ function! github#connect(path, ...)  " {{{2
 
     let res = system(printf('%s -s %s %s://%s%s%s',
     \ g:github#curl_cmd, param,
-    \ protocol, s:domain, s:base_path, a:path))
+    \ protocol, s:domain, s:base_path, path))
   finally
     for f in files
       call delete(f)
