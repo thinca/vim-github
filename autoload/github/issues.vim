@@ -140,7 +140,7 @@ endfunction
 
 
 function! s:feature.action()  " {{{2
-  if b:github_issues_view ==# 'issue_list'
+  if b:github_issues_buf ==# 'view_issue_list'
     call self.view('issue', line('.') - 3)
   endif
 endfunction
