@@ -45,10 +45,14 @@ function! s:feature.opened()  " {{{2
   \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
   \        :<C-u>call b:github_issues.view('issue_list')<CR>
+  nnoremap <buffer> <silent> <Plug>(github-issues-reload)
+  \        :<C-u>call b:github_issues.reload()<CR>
 
   silent! nmap <unique> <CR> <Plug>(github-issues-action)
   silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
   silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
+  silent! nmap <unique> R <Plug>(github-issues-reload)
+  silent! nmap <unique> <C-r> <Plug>(github-issues-reload)
 endfunction
 
 
@@ -82,6 +86,8 @@ function! s:feature.view_issue(order)  " {{{2
   if type(issue.comments) == type(0)
     let issue.comments = self.connect('comments', issue.number).comments
   endif
+
+  let self.issue = issue
 
   return self.issue_layout(issue)
 endfunction
@@ -179,6 +185,18 @@ function! s:feature.action()  " {{{2
       endtry
       close
     endif
+  endif
+endfunction
+
+
+
+function! s:feature.reload()  " {{{2
+  if b:github_issues_buf ==# 'view_issue_list'
+    call self.fetch()
+    call self.view('issue_list')
+  elseif b:github_issues_buf ==# 'view_issue'
+    let self.issue.comments = 0
+    call self.view('issue')
   endif
 endfunction
 
