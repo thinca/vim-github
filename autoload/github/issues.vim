@@ -24,6 +24,8 @@ function! s:feature.invoke(args)  " {{{2
     let id = a:args[1]
     if id =~ '^\d\+$'
       call f.view('issue', id - 1)
+    elseif id ==# 'new'
+      call f.edit('issue')
     endif
   endif
 endfunction
