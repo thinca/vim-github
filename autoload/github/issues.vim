@@ -135,9 +135,8 @@ endfunction
 
 
 function! s:feature.connect(action, ...)  " {{{2
-  let params = a:0 ? '/' . join(a:000, '/') : ''
-  return github#connect(printf('/issues/%s/%s/%s%s',
-  \ a:action, self.user, self.repos, params))
+  return github#connect('/issues', a:action, self.user, self.repos,
+  \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
 endfunction
 
 
