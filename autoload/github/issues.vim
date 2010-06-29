@@ -140,8 +140,41 @@ endfunction
 
 
 function! s:feature.action()  " {{{2
+  let button = github#button()
   if b:github_issues_buf ==# 'view_issue_list'
-    call self.view('issue', line('.') - 3)
+    if button != ''
+      call self.edit('issue')
+    else
+      call self.view('issue', line('.') - 3)
+    endif
+  elseif b:github_issues_buf ==# 'edit_issue'
+    if button ==# '[[POST]]'
+      let c = getpos('.')
+      try
+        1
+        let bodystart = search('^\cbody:', 'n')
+        if !bodystart
+          throw 'github: issues: No body.'
+        endif
+        let body = join(getline(bodystart + 1, '$'), "\n")
+
+        let titleline = search('^\ctitle:', 'Wn', bodystart)
+        if !titleline
+          throw 'github: issues: No title.'
+        endif
+        let title = matchstr(getline(titleline), '^\w\+:\s*\zs.\{-}\ze\s*$')
+        if title == ''
+          throw 'github: issues: Title is empty.'
+        endif
+        let res = self.connect('open', {'title': title, 'body': body})
+        call add(self.issues, res.issue)
+        " TODO: Update labels.
+
+      finally
+        call setpos('.', c)
+      endtry
+      close
+    endif
   endif
 endfunction
 
