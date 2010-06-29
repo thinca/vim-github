@@ -25,7 +25,7 @@ endfunction
 function! s:prototype.header()  " {{{2
   return ''
 endfunction
-function! s:prototype.open(with, ...)  " {{{2
+function! s:prototype.view(with, ...)  " {{{2
   let ft = 'github-' . self.name
   let bufnr = 0
   for i in range(0, winnr('$'))
@@ -57,7 +57,7 @@ function! s:prototype.open(with, ...)  " {{{2
 
   let b:github_{self.name}_view = a:with
   silent 0put =self.header()
-  silent $put =call(self[a:with], a:000, self)
+  silent $put =call(self['view_' . a:with], a:000, self)
 
   setlocal nomodifiable readonly
   1

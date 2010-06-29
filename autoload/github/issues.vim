@@ -19,11 +19,11 @@ function! s:feature.invoke(args)  " {{{2
   let f = self.new(user, repos)
 
   if len(a:args) == 1
-    call f.open('view_issue_list')
+    call f.view('issue_list')
   else
     let id = a:args[1]
     if id =~ '^\d\+$'
-      call f.open('view_issue', id - 1)
+      call f.view('issue', id - 1)
     endif
   endif
 endfunction
@@ -42,7 +42,7 @@ function! s:feature.opened()  " {{{2
   nnoremap <buffer> <silent> <Plug>(github-issues-action)
   \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
-  \        :<C-u>call b:github_issues.open('view_issue_list')<CR>
+  \        :<C-u>call b:github_issues.view('issue_list')<CR>
 
   silent! nmap <unique> <CR> <Plug>(github-issues-action)
   silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
@@ -127,8 +127,8 @@ endfunction
 
 
 function! s:feature.action()  " {{{2
-  if b:github_issues_view ==# 'view_issue_list'
-    call self.open('view_issue', line('.') - 3)
+  if b:github_issues_view ==# 'issue_list'
+    call self.view('issue', line('.') - 3)
   endif
 endfunction
 
