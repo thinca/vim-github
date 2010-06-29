@@ -63,6 +63,25 @@ function! s:prototype.view(with, ...)  " {{{2
   setlocal nomodifiable readonly
   1
 endfunction
+function! s:prototype.edit(template, ...)  " {{{2
+  let ft = 'github-' . self.name
+  " TODO: Opener is made customizable.
+  new
+  let b:github_{self.name} = self
+
+  setlocal nobuflisted
+  setlocal buftype=nofile noswapfile bufhidden=wipe
+  let &l:filetype = ft
+
+  call self.opened()
+
+  let name = 'edit_' . a:template
+  let b:github_{self.name}_buf = name
+  silent 0put =self.header()
+  silent $put =call(self[name], a:000, self)
+
+  1
+endfunction
 
 
 
