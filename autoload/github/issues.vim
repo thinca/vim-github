@@ -72,7 +72,7 @@ endfunction
 
 
 function! s:feature.view_issue_list()  " {{{2
-  return map(copy(self.issues), 'self.line_format(v:val)')
+  return ['[[New Issue]]'] + map(copy(self.issues), 'self.line_format(v:val)')
 endfunction
 
 
@@ -144,7 +144,7 @@ endfunction
 function! s:feature.action()  " {{{2
   let button = github#button()
   if b:github_issues_buf ==# 'view_issue_list'
-    if button != ''
+    if button ==# '[[New Issue]]'
       call self.edit('issue')
     else
       call self.view('issue', line('.') - 3)
