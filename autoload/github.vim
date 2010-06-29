@@ -42,7 +42,6 @@ function! s:prototype.view(with, ...)  " {{{2
   if bufnr == 0
     " TODO: Opener is made customizable.
     new
-    let b:github_{self.name} = self
 
     setlocal nobuflisted
     setlocal buftype=nofile noswapfile bufhidden=wipe
@@ -55,7 +54,9 @@ function! s:prototype.view(with, ...)  " {{{2
     silent % delete _
   endif
 
+  let b:github_{self.name} = self
   let b:github_{self.name}_view = a:with
+
   silent 0put =self.header()
   silent $put =call(self['view_' . a:with], a:000, self)
 
