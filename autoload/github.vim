@@ -123,6 +123,21 @@ endfunction
 
 
 
+function! github#flatten(list)  " {{{2
+  let list = []
+  for i in a:list
+    if type(i) == type([])
+      let list += github#flatten(i)
+    else
+      call add(list, i)
+    endif
+    unlet! i
+  endfor
+  return list
+endfunction
+
+
+
 function! github#button()  " {{{2
   return github#get_text_on_cursor('\[\[.\{-}\]\]')
 endfunction
