@@ -260,6 +260,10 @@ if !exists('g:github#use_https')  " {{{2
   let g:github#use_https = 0
 endif
 
+if !exists('g:github#debug')  " {{{2
+  let g:github#debug = 0
+endif
+
 
 
 " Register the default features. {{{1
