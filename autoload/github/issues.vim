@@ -203,7 +203,7 @@ function! s:feature.reload()  " {{{2
     call self.view('issue_list')
   elseif b:github_issues_buf ==# 'view_issue'
     let self.issue.comments = 0
-    call self.view('issue')
+    call self.view('issue', self.issue.number - 1)
   endif
 endfunction
 
