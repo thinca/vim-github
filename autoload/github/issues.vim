@@ -68,6 +68,14 @@ endfunction
 
 
 
+function! s:feature.update_issue(number, title, body)  " {{{2
+  let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
+  " FIXME: The order is non-definite.
+  let self.issues[a:number - 1] = res.issue
+endfunction
+
+
+
 function! s:feature.create_new_issue(title, body, labels)  " {{{2
   let res = self.connect('open', {'title': a:title, 'body': a:body})
   " TODO: Update labels.
@@ -97,7 +105,7 @@ function! s:feature.view_issue(order)  " {{{2
 
   let self.issue = issue
 
-  return self.issue_layout(issue)
+  return ['[[Edit]]'] + self.issue_layout(issue)
 endfunction
 
 
@@ -106,7 +114,11 @@ function! s:feature.edit_issue(...)  " {{{2
   let [title, labels, body] = a:0 ?
   \ [a:1.title, a:1.labels, a:1.body] :
   \ ['', [], "\n"]
-  let text = ['[[POST]]', 'title: ' . title]
+  let text = ['[[POST]]']
+  if a:0
+    let text += ['number: ' . a:1.number]
+  endif
+  let text += ['title: ' . title]
   if !empty(labels)
     call add(text, 'labels: ' . join(labels, ', ')
   endif
@@ -165,6 +177,10 @@ function! s:feature.action()  " {{{2
       " FIXME: Accurate issue number.
       call self.view('issue', line('.') - 4)
     endif
+  elseif b:github_issues_buf ==# 'view_issue'
+    if button ==# '[[Edit]]'
+      call self.edit('issue', self.issue)
+    endif
   elseif b:github_issues_buf ==# 'edit_issue'
     if button ==# '[[POST]]'
       let c = getpos('.')
@@ -184,8 +200,16 @@ function! s:feature.action()  " {{{2
         if title == ''
           throw 'github: issues: Title is empty.'
         endif
-        " TODO: Pass labels.
-        call self.create_new_issue(title, body, [])
+
+        let numberline = search('^\cnumber:', 'Wn', bodystart)
+        if numberline
+          let number = matchstr(getline(numberline), '^\w\+:\s*\zs.\{-}\ze\s*$')
+          call self.update_issue(number, title, body)
+
+        else
+          " TODO: Pass labels.
+          call self.create_new_issue(title, body, [])
+        endif
 
       finally
         call setpos('.', c)
