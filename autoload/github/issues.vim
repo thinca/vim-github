@@ -104,7 +104,7 @@ endfunction
 
 function! s:feature.edit_issue(...)  " {{{2
   let [title, labels, body] = a:0 ?
-  \ [a:0.title, a:0.labels, a:0.body] :
+  \ [a:1.title, a:1.labels, a:1.body] :
   \ ['', [], "\n"]
   let text = ['[[POST]]', 'title: ' . title]
   if !empty(labels)
