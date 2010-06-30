@@ -68,6 +68,14 @@ endfunction
 
 
 
+function! s:feature.create_new_issue(title, body, labels)  " {{{2
+  let res = self.connect('open', {'title': a:title, 'body': a:body})
+  " TODO: Update labels.
+  call add(self.issues, res.issue)
+endfunction
+
+
+
 " View.  {{{1
 function! s:feature.header()  " {{{2
   return printf('Github Issues - %s/%s', self.user, self.repos)
@@ -176,9 +184,8 @@ function! s:feature.action()  " {{{2
         if title == ''
           throw 'github: issues: Title is empty.'
         endif
-        let res = self.connect('open', {'title': title, 'body': body})
-        call add(self.issues, res.issue)
-        " TODO: Update labels.
+        " TODO: Pass labels.
+        call self.create_new_issue(title, body, [])
 
       finally
         call setpos('.', c)
