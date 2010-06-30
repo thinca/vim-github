@@ -90,6 +90,18 @@ omitable.
 Since the line that starts with 'body:' is treated as body.  The blank lines
 at the header of body are ignored.
 
+Limitation
+----------
+The following functions are not provided, because API doesn't exist.
+
+- Unread management.
+- Edit a comment.
+- Delete a comment.
+- Get the color of a label.
+- Set the color of a label.
+- Rename a label.
+- Update vote.
+
 
 
 ==============================================================================
