@@ -48,11 +48,11 @@ function! s:feature.opened()  " {{{2
   nnoremap <buffer> <silent> <Plug>(github-issues-reload)
   \        :<C-u>call b:github_issues.reload()<CR>
 
-  silent! nmap <unique> <CR> <Plug>(github-issues-action)
-  silent! nmap <unique> <BS> <Plug>(github-issues-issue-list)
-  silent! nmap <unique> <C-t> <Plug>(github-issues-issue-list)
-  silent! nmap <unique> R <Plug>(github-issues-reload)
-  silent! nmap <unique> <C-r> <Plug>(github-issues-reload)
+  silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
+  silent! nmap <buffer> <unique> <BS> <Plug>(github-issues-issue-list)
+  silent! nmap <buffer> <unique> <C-t> <Plug>(github-issues-issue-list)
+  silent! nmap <buffer> <unique> R <Plug>(github-issues-reload)
+  silent! nmap <buffer> <unique> <C-r> <Plug>(github-issues-reload)
 endfunction
 
 
