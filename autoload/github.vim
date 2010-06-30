@@ -129,9 +129,13 @@ function! github#connect(path, ...)  " {{{2
       let param .= printf(' -F "%s=<%s"', key, f)
     endfor
 
-    let res = system(printf('%s -s %s %s://%s%s%s',
+    let cmd = printf('%s -s %s %s://%s%s%s',
     \ g:github#curl_cmd, param,
-    \ protocol, s:domain, s:base_path, path))
+    \ protocol, s:domain, s:base_path, path)
+    if g:github#debug
+      echomsg cmd
+    endif
+    let res = system(cmd)
   finally
     for f in files
       call delete(f)
