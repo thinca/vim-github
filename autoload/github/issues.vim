@@ -92,7 +92,7 @@ endfunction
 
 
 function! s:feature.view_issue_list()  " {{{2
-  return ['[[New Issue]]'] + map(copy(self.issues), 'self.line_format(v:val)')
+  return ['[[new issue]]'] + map(copy(self.issues), 'self.line_format(v:val)')
 endfunction
 
 
@@ -105,7 +105,7 @@ function! s:feature.view_issue(order)  " {{{2
 
   let self.issue = issue
 
-  return ['[[Edit]] ' . (issue.state ==# 'open' ?
+  return ['[[edit]] ' . (issue.state ==# 'open' ?
   \       '[[close]]' : '[[reopen]]')] + self.issue_layout(issue)
 endfunction
 
@@ -172,14 +172,14 @@ endfunction
 function! s:feature.action()  " {{{2
   let button = github#button()
   if b:github_issues_buf ==# 'view_issue_list'
-    if button ==# '[[New Issue]]'
+    if button ==# '[[new issue]]'
       call self.edit('issue')
     else
       " FIXME: Accurate issue number.
       call self.view('issue', line('.') - 4)
     endif
   elseif b:github_issues_buf ==# 'view_issue'
-    if button ==# '[[Edit]]'
+    if button ==# '[[edit]]'
       call self.edit('issue', self.issue)
     elseif button ==# '[[close]]'
       let num = self.issue.number
