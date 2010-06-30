@@ -105,7 +105,8 @@ function! s:feature.view_issue(order)  " {{{2
 
   let self.issue = issue
 
-  return ['[[Edit]]'] + self.issue_layout(issue)
+  return ['[[Edit]] ' . (issue.state ==# 'open' ?
+  \       '[[close]]' : '[[reopen]]')] + self.issue_layout(issue)
 endfunction
 
 
@@ -180,6 +181,14 @@ function! s:feature.action()  " {{{2
   elseif b:github_issues_buf ==# 'view_issue'
     if button ==# '[[Edit]]'
       call self.edit('issue', self.issue)
+    elseif button ==# '[[close]]'
+      let num = self.issue.number
+      let self.issues[num - 1] = self.connect('close', num).issue
+      call self.view('issue', num - 1)
+    elseif button ==# '[[reopen]]'
+      let num = self.issue.number
+      let self.issues[num - 1] = self.connect('reopen', num).issue
+      call self.view('issue', num - 1)
     endif
   elseif b:github_issues_buf ==# 'edit_issue'
     if button ==# '[[POST]]'
