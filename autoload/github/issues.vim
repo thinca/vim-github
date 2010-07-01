@@ -29,7 +29,7 @@ function! s:Issues.update_list()  " {{{2
   let open = self.connect('list', 'open')
   let closed = self.connect('list', 'closed')
 
-  let self.issues = sort(open.issues + closed.issues, s:func('compare'))
+  let self.issues = sort(open.issues + closed.issues, s:func('order_by_number'))
 endfunction
 
 function! s:Issues.create_new_issue(title, body, labels)  " {{{2
@@ -110,7 +110,9 @@ endfunction
 
 
 function! s:UI.view_issue_list()  " {{{2
-  return ['[[new issue]]'] + map(self.issues.list(), 'self.line_format(v:val)')
+  return ['[[new issue]]'] +
+  \ map(sort(self.issues.list(), s:func('compare_list')),
+  \     'self.line_format(v:val)')
 endfunction
 
 
@@ -327,8 +329,17 @@ endfunction
 
 
 " Misc.  {{{1
-function! s:compare(a, b)  " {{{2
+function! s:order_by_number(a, b)  " {{{2
+  return a:a.number - a:b.number
+endfunction
+
+
+
+function! s:compare_list(a, b)  " {{{2
   " TODO: Be made customizable.
+  if a:a.state !=# a:b.state
+    return a:a.state ==# 'open' ? -1 : 1
+  endif
   return a:a.number - a:b.number
 endfunction
 
