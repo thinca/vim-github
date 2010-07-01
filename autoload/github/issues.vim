@@ -40,6 +40,7 @@ endfunction
 
 function! s:Issues.update_issue(number, title, body)  " {{{2
   let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
+  let res.issue.comments = self.issues[a:number - 1].comments
   let self.issues[a:number - 1] = res.issue
 endfunction
 
