@@ -44,6 +44,11 @@ function! s:Issues.update_issue(number, title, body)  " {{{2
   let self.issues[a:number - 1] = res.issue
 endfunction
 
+function! s:Issues.add_comment(number, comment)  " {{{2
+  let comment = self.connect('comment', a:number, {'comment': a:comment})
+  call add(self.get(a:number).comments, comment.comment)
+endfunction
+
 function! s:Issues.fetch_comments(number, ...)  " {{{2
   let issue = self.get(a:number)
   let force = a:0 && a:1
@@ -135,6 +140,12 @@ endfunction
 
 
 
+function! s:UI.edit_comment(num)  " {{{2
+  return ['[[POST]]', 'number: ' . a:num, 'comment:', '', '']
+endfunction
+
+
+
 function! s:UI.line_format(issue)  " {{{2
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
   \      join(map(copy(a:issue.labels), '"[".v:val."]"'), ''),
@@ -175,6 +186,8 @@ function! s:UI.issue_layout(issue)  " {{{2
     let lines += map(split(c.body, '\r\?\n'), '"  " . v:val')
   endfor
 
+  let lines += ['', '', '[[add comment]]']
+
   return lines
 endfunction
 
@@ -201,6 +214,8 @@ function! s:UI.action()  " {{{2
       let num = self.issue.number
       call self.issues.reopen(num)
       call self.view('issue', num)
+    elseif button ==# '[[add comment]]'
+      call self.edit('comment', self.issue.number)
     endif
   elseif b:github_issues_buf ==# 'edit_issue'
     if button ==# '[[POST]]'
@@ -231,6 +246,26 @@ function! s:UI.action()  " {{{2
           " TODO: Pass labels.
           call self.issues.create_new_issue(title, body, [])
         endif
+
+      finally
+        call setpos('.', c)
+      endtry
+      close
+    endif
+  elseif b:github_issues_buf ==# 'edit_comment'
+    if button ==# '[[POST]]'
+      let c = getpos('.')
+      try
+        1
+        let commentstart = search('^\ccomment:', 'n')
+        if !commentstart
+          throw 'github: issues: No comment.'
+        endif
+        let comment = join(getline(commentstart + 1, '$'), "\n")
+
+        let numberline = search('^\cnumber:', 'Wn', commentstart)
+        let number = matchstr(getline(numberline), '^\w\+:\s*\zs.\{-}\ze\s*$')
+        call self.issues.add_comment(number, comment)
 
       finally
         call setpos('.', c)
