@@ -15,17 +15,76 @@ let s:base_path = '/api/v2/json'
 let s:prototype = {}  " {{{1
 function! s:prototype.new(...)  " {{{2
   let obj = copy(self)
-  call call(obj.initialize, a:000, obj)
+  if has_key(obj, 'initialize')
+    call call(obj.initialize, a:000, obj)
+  endif
   return obj
 endfunction
-function! s:prototype.initialize()  " {{{2
+
+" API
+let s:Github = s:prototype.new()  " {{{1
+function! s:Github.initialize(user, token)  " {{{2
+  let [self.user, self.token] = [a:user, a:token]
+
+  let self.curl_cmd = g:github#curl_cmd
+  let self.protocol = g:github#use_https ? 'https' : 'http'
 endfunction
-function! s:prototype.opened()  " {{{2
+
+function! s:Github.connect(path, ...)  " {{{2
+  let params = {}
+  let path = a:path
+  let raw = 0
+  for a in github#flatten(a:000)
+    if type(a) == type(0)
+      raw = a
+    elseif type(a) == type('')
+      let path .= '/' . a
+    elseif type(a) == type({})
+      call extend(params, a)
+    endif
+    unlet a
+  endfor
+
+  let files = []
+
+  try
+    let param = printf('-F "login=%s" -F "token=%s"',
+    \                  self.user, self.token)
+
+    for [key, val] in items(params)
+      let f = tempname()
+      call add(files, f)
+      call writefile(split(s:iconv(val, &encoding, 'utf-8'), "\n", 1), f, 'b')
+      let param .= printf(' -F "%s=<%s"', key, f)
+    endfor
+
+    let cmd = printf('%s -s %s %s://%s%s%s',
+    \ self.curl_cmd, param,
+    \ self.protocol, s:domain, s:base_path, path)
+    call github#debug_log(cmd)
+    let res = system(cmd)
+  finally
+    for f in files
+      call delete(f)
+    endfor
+  endtry
+
+  let r = s:iconv(res, 'utf-8', &encoding)
+
+  return raw ? res : s:parse_json(res)
 endfunction
-function! s:prototype.header()  " {{{2
+
+
+
+let s:UI = s:prototype.new()  " {{{1
+function! s:UI.initialize()  " {{{2
+endfunction
+function! s:UI.opened()  " {{{2
+endfunction
+function! s:UI.header()  " {{{2
   return ''
 endfunction
-function! s:prototype.view(with, ...)  " {{{2
+function! s:UI.view(with, ...)  " {{{2
   let ft = 'github-' . self.name
   let bufnr = 0
   for i in range(0, winnr('$'))
@@ -65,7 +124,7 @@ function! s:prototype.view(with, ...)  " {{{2
   setlocal nomodifiable readonly
   1
 endfunction
-function! s:prototype.edit(template, ...)  " {{{2
+function! s:UI.edit(template, ...)  " {{{2
   let ft = 'github-' . self.name
   let name = 'edit_' . a:template
 
@@ -93,56 +152,14 @@ endfunction
 let s:features = {}
 
 function! github#register(feature)  " {{{2
-  let feature = extend(copy(s:prototype), a:feature)
+  let feature = extend(copy(s:UI), a:feature)
   let s:features[feature.name] = feature
 endfunction
 
 
 " Interfaces.  {{{1
 function! github#connect(path, ...)  " {{{2
-  let params = {}
-  let path = a:path
-  let raw = 0
-  for a in github#flatten(a:000)
-    if type(a) == type(0)
-      raw = a
-    elseif type(a) == type('')
-      let path .= '/' . a
-    elseif type(a) == type({})
-      call extend(params, a)
-    endif
-    unlet a
-  endfor
-
-  let protocol = g:github#use_https ? 'https' : 'http'
-
-  let files = []
-
-  try
-    let param = printf('-F "login=%s" -F "token=%s"',
-    \                  g:github#user, g:github#token)
-
-    for [key, val] in items(params)
-      let f = tempname()
-      call add(files, f)
-      call writefile(split(s:iconv(val, &encoding, 'utf-8'), "\n", 1), f, 'b')
-      let param .= printf(' -F "%s=<%s"', key, f)
-    endfor
-
-    let cmd = printf('%s -s %s %s://%s%s%s',
-    \ g:github#curl_cmd, param,
-    \ protocol, s:domain, s:base_path, path)
-    call github#debug_log(cmd)
-    let res = system(cmd)
-  finally
-    for f in files
-      call delete(f)
-    endfor
-  endtry
-
-  let r = s:iconv(res, 'utf-8', &encoding)
-
-  return raw ? res : s:parse_json(res)
+  return s:Github.new(g:github#user, g:github#token).connect(a:path, a:000)
 endfunction
 
 
