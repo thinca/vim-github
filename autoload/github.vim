@@ -132,9 +132,7 @@ function! github#connect(path, ...)  " {{{2
     let cmd = printf('%s -s %s %s://%s%s%s',
     \ g:github#curl_cmd, param,
     \ protocol, s:domain, s:base_path, path)
-    if g:github#debug
-      echomsg cmd
-    endif
+    call github#debug_log(cmd)
     let res = system(cmd)
   finally
     for f in files
@@ -235,6 +233,18 @@ function! s:iconv(expr, from, to)  " {{{2
   endif
   let result = iconv(a:expr, a:from, a:to)
   return result != '' ? result : a:expr
+endfunction
+
+
+
+" Debug.  {{{1
+function! github#debug_log(mes, ...)  " {{{2
+  if g:github#debug
+    let mes = a:0 ? call('printf', [a:mes] + a:000) : a:mes
+    for m in split(mes, "\n")
+      echomsg 'github: ' . m
+    endfor
+  endif
 endfunction
 
 
