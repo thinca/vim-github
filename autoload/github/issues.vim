@@ -40,7 +40,6 @@ endfunction
 
 function! s:Issues.update_issue(number, title, body)  " {{{2
   let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
-  " FIXME: The order is non-definite.
   let self.issues[a:number - 1] = res.issue
 endfunction
 
