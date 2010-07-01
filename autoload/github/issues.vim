@@ -203,8 +203,10 @@ function! s:UI.action()  " {{{2
     if button ==# '[[new issue]]'
       call self.edit('issue')
     else
-      " FIXME: Accurate issue number.
-      call self.view('issue', line('.') - 3)
+      let number = matchstr(getline('.'), '^\s*\zs\d\+\ze\s*:')
+      if number =~ '^\d\+$'
+        call self.view('issue', number)
+      endif
     endif
   elseif b:github_issues_buf ==# 'view_issue'
     if button ==# '[[edit]]'
