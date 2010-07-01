@@ -8,39 +8,77 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
-let s:feature = {'name': 'issues'}
+" Isseus object  {{{1
+let s:Issues = github#base()
+let s:Issues.name = 'issues'
 
+function! s:Issues.initialize(user, repos)  " {{{2
+  let [self.user, self.repos] = [a:user, a:repos]
+  let self.issues = []  " issues: Always sorted by issue number.
+endfunction
 
-function! s:feature.invoke(args)  " {{{2
-  let repos = a:args[0]
-  let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
-  \                                    : [g:github#user, repos]
+function! s:Issues.get(number)  " {{{2
+  return self.issues[a:number - 1]
+endfunction
 
-  let f = self.new(user, repos)
+function! s:Issues.list()  " {{{2
+  return copy(self.issues)
+endfunction
 
-  if len(a:args) == 1
-    call f.view('issue_list')
-  else
-    let id = a:args[1]
-    if id =~ '^\d\+$'
-      call f.view('issue', id - 1)
-    elseif id ==# 'new'
-      call f.edit('issue')
-    endif
+function! s:Issues.update_list()  " {{{2
+  let open = self.connect('list', 'open')
+  let closed = self.connect('list', 'closed')
+
+  let self.issues = sort(open.issues + closed.issues, s:func('compare'))
+endfunction
+
+function! s:Issues.create_new_issue(title, body, labels)  " {{{2
+  let res = self.connect('open', {'title': a:title, 'body': a:body})
+  " TODO: Update labels.
+  call add(self.issues, res.issue)
+endfunction
+
+function! s:Issues.update_issue(number, title, body)  " {{{2
+  let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
+  " FIXME: The order is non-definite.
+  let self.issues[a:number - 1] = res.issue
+endfunction
+
+function! s:Issues.fetch_comments(number, ...)  " {{{2
+  let issue = self.get(a:number)
+  let force = a:0 && a:1
+  if force || type(issue.comments) == type(0)
+    let issue.comments = self.connect('comments', issue.number).comments
   endif
 endfunction
 
+function! s:Issues.close(number)  " {{{2
+  let self.issues[a:number - 1] = self.connect('close', a:number).issue
+endfunction
 
+function! s:Issues.reopen(number)  " {{{2
+  let self.issues[a:number - 1] = self.connect('reopen', a:number).issue
+endfunction
 
-function! s:feature.initialize(user, repos)  " {{{2
-  let [self.user, self.repos] = [a:user, a:repos]
-
-  call self.fetch()
+function! s:Issues.connect(action, ...)  " {{{2
+  return github#connect('/issues', a:action, self.user, self.repos,
+  \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
 endfunction
 
 
 
-function! s:feature.opened()  " {{{2
+" UI object  {{{1
+let s:UI = {'name': 'issues'}
+
+function! s:UI.initialize(issues)  " {{{2
+  let self.issues = a:issues
+
+  call self.issues.update_list()
+endfunction
+
+
+
+function! s:UI.opened()  " {{{2
   nnoremap <buffer> <silent> <Plug>(github-issues-action)
   \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
@@ -57,61 +95,30 @@ endfunction
 
 
 
-" Model.  {{{1
-function! s:feature.fetch()  " {{{2
-  let open = self.connect('list', 'open')
-  let closed = self.connect('list', 'closed')
-
-  let self.issues = open.issues + closed.issues
-  call self.sort()
+function! s:UI.header()  " {{{2
+  return printf('Github Issues - %s/%s', self.issues.user, self.issues.repos)
 endfunction
 
 
 
-function! s:feature.update_issue(number, title, body)  " {{{2
-  let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
-  " FIXME: The order is non-definite.
-  let self.issues[a:number - 1] = res.issue
+function! s:UI.view_issue_list()  " {{{2
+  return ['[[new issue]]'] + map(self.issues.list(), 'self.line_format(v:val)')
 endfunction
 
 
 
-function! s:feature.create_new_issue(title, body, labels)  " {{{2
-  let res = self.connect('open', {'title': a:title, 'body': a:body})
-  " TODO: Update labels.
-  call add(self.issues, res.issue)
+function! s:UI.view_issue(number)  " {{{2
+  call self.issues.fetch_comments(a:number)
+
+  let self.issue = self.issues.get(a:number)
+
+  return ['[[edit]] ' . (self.issue.state ==# 'open' ?
+  \       '[[close]]' : '[[reopen]]')] + self.issue_layout(self.issue)
 endfunction
 
 
 
-" View.  {{{1
-function! s:feature.header()  " {{{2
-  return printf('Github Issues - %s/%s', self.user, self.repos)
-endfunction
-
-
-
-function! s:feature.view_issue_list()  " {{{2
-  return ['[[new issue]]'] + map(copy(self.issues), 'self.line_format(v:val)')
-endfunction
-
-
-
-function! s:feature.view_issue(order)  " {{{2
-  let issue = self.issues[a:order]
-  if type(issue.comments) == type(0)
-    let issue.comments = self.connect('comments', issue.number).comments
-  endif
-
-  let self.issue = issue
-
-  return ['[[edit]] ' . (issue.state ==# 'open' ?
-  \       '[[close]]' : '[[reopen]]')] + self.issue_layout(issue)
-endfunction
-
-
-
-function! s:feature.edit_issue(...)  " {{{2
+function! s:UI.edit_issue(...)  " {{{2
   let [title, labels, body] = a:0 ?
   \ [a:1.title, a:1.labels, a:1.body] :
   \ ['', [], "\n"]
@@ -128,7 +135,7 @@ endfunction
 
 
 
-function! s:feature.line_format(issue)  " {{{2
+function! s:UI.line_format(issue)  " {{{2
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
   \      join(map(copy(a:issue.labels), '"[".v:val."]"'), ''),
   \      substitute(a:issue.title, '\n', '', 'g'))
@@ -136,7 +143,7 @@ endfunction
 
 
 
-function! s:feature.issue_layout(issue)  " {{{2
+function! s:UI.issue_layout(issue)  " {{{2
   let i = a:issue
   let lines = [
   \ i.number . ': ' . i.title,
@@ -174,32 +181,26 @@ endfunction
 
 
 " Control.  {{{1
-function! s:feature.sort()  " {{{2
-  call sort(self.issues, s:func('compare'))
-endfunction
-
-
-
-function! s:feature.action()  " {{{2
+function! s:UI.action()  " {{{2
   let button = github#get_text_on_cursor('\[\[.\{-}\]\]')
   if b:github_issues_buf ==# 'view_issue_list'
     if button ==# '[[new issue]]'
       call self.edit('issue')
     else
       " FIXME: Accurate issue number.
-      call self.view('issue', line('.') - 4)
+      call self.view('issue', line('.') - 3)
     endif
   elseif b:github_issues_buf ==# 'view_issue'
     if button ==# '[[edit]]'
       call self.edit('issue', self.issue)
     elseif button ==# '[[close]]'
       let num = self.issue.number
-      let self.issues[num - 1] = self.connect('close', num).issue
-      call self.view('issue', num - 1)
+      call self.issues.close(num)
+      call self.view('issue', num)
     elseif button ==# '[[reopen]]'
       let num = self.issue.number
-      let self.issues[num - 1] = self.connect('reopen', num).issue
-      call self.view('issue', num - 1)
+      call self.issues.reopen(num)
+      call self.view('issue', num)
     endif
   elseif b:github_issues_buf ==# 'edit_issue'
     if button ==# '[[POST]]'
@@ -224,11 +225,11 @@ function! s:feature.action()  " {{{2
         let numberline = search('^\cnumber:', 'Wn', bodystart)
         if numberline
           let number = matchstr(getline(numberline), '^\w\+:\s*\zs.\{-}\ze\s*$')
-          call self.update_issue(number, title, body)
+          call self.issues.update_issue(number, title, body)
 
         else
           " TODO: Pass labels.
-          call self.create_new_issue(title, body, [])
+          call self.issues.create_new_issue(title, body, [])
         endif
 
       finally
@@ -241,21 +242,36 @@ endfunction
 
 
 
-function! s:feature.reload()  " {{{2
+function! s:UI.reload()  " {{{2
   if b:github_issues_buf ==# 'view_issue_list'
-    call self.fetch()
+    call self.issues.update_list()
     call self.view('issue_list')
   elseif b:github_issues_buf ==# 'view_issue'
     let self.issue.comments = 0
-    call self.view('issue', self.issue.number - 1)
+    call self.view('issue', self.issue.number)
   endif
 endfunction
 
 
 
-function! s:feature.connect(action, ...)  " {{{2
-  return github#connect('/issues', a:action, self.user, self.repos,
-  \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
+function! s:UI.invoke(args)  " {{{2
+  let repos = a:args[0]
+  let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
+  \                                    : [g:github#user, repos]
+
+  let issues = s:Issues.new(user, repos)
+  let ui = self.new(issues)
+
+  if len(a:args) == 1
+    call ui.view('issue_list')
+  else
+    let id = a:args[1]
+    if id =~ '^\d\+$'
+      call ui.view('issue', id)
+    elseif id ==# 'new'
+      call ui.edit('issue')
+    endif
+  endif
 endfunction
 
 
@@ -275,7 +291,7 @@ endfunction
 
 
 function! github#issues#new()  " {{{2
-  return copy(s:feature)
+  return copy(s:UI)
 endfunction
 
 
