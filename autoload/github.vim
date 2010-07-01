@@ -241,9 +241,15 @@ endfunction
 function! github#debug_log(mes, ...)  " {{{2
   if g:github#debug
     let mes = a:0 ? call('printf', [a:mes] + a:000) : a:mes
-    for m in split(mes, "\n")
-      echomsg 'github: ' . m
-    endfor
+    if g:github#debug_file == ''
+      for m in split(mes, "\n")
+        echomsg 'github: ' . m
+      endfor
+    else
+      execute 'redir >>' g:github#debug_file
+      silent! echo strftime('%c:') mes
+      redir END
+    endif
   endif
 endfunction
 
@@ -270,6 +276,10 @@ endif
 
 if !exists('g:github#debug')  " {{{2
   let g:github#debug = 0
+endif
+
+if !exists('g:github#debug_file')  " {{{2
+  let g:github#debug_file = ''
 endif
 
 
