@@ -12,8 +12,8 @@ let s:base_path = '/api/v2/json'
 
 
 
-let s:prototype = {}  " {{{1
-function! s:prototype.new(...)  " {{{2
+let s:Base = {}  " {{{1
+function! s:Base.new(...)  " {{{2
   let obj = copy(self)
   if has_key(obj, 'initialize')
     call call(obj.initialize, a:000, obj)
@@ -24,7 +24,7 @@ endfunction
 
 
 " API
-let s:Github = s:prototype.new()  " {{{1
+let s:Github = s:Base.new()  " {{{1
 function! s:Github.initialize(user, token)  " {{{2
   let [self.user, self.token] = [a:user, a:token]
 
@@ -79,7 +79,7 @@ endfunction
 
 
 " UI
-let s:UI = s:prototype.new()  " {{{1
+let s:UI = s:Base.new()  " {{{1
 function! s:UI.opened()  " {{{2
 endfunction
 
@@ -163,7 +163,7 @@ endfunction
 
 " Interfaces.  {{{1
 function! github#base()  " {{{2
-  return s:prototype.new()
+  return s:Base.new()
 endfunction
 
 
