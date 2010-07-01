@@ -145,7 +145,7 @@ function! s:feature.issue_layout(issue)  " {{{2
   \ ]
 
   if !empty(i.labels)
-    let lines += [join(i.labels, ', ')]
+    let lines += ['labels: ' . join(i.labels, ', ')]
   endif
 
   let lines += ['created: ' . i.created_at]
