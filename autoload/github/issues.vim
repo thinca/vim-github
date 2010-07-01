@@ -87,12 +87,15 @@ function! s:UI.opened()  " {{{2
   \        :<C-u>call b:github_issues.action()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
   \        :<C-u>call b:github_issues.view('issue_list')<CR>
+  nnoremap <buffer> <silent> <Plug>(github-issues-redraw)
+  \        :<C-u>call b:github_issues.redraw()<CR>
   nnoremap <buffer> <silent> <Plug>(github-issues-reload)
   \        :<C-u>call b:github_issues.reload()<CR>
 
   silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
   silent! nmap <buffer> <unique> <BS> <Plug>(github-issues-issue-list)
   silent! nmap <buffer> <unique> <C-t> <Plug>(github-issues-issue-list)
+  silent! nmap <buffer> <unique> r <Plug>(github-issues-redraw)
   silent! nmap <buffer> <unique> R <Plug>(github-issues-reload)
   silent! nmap <buffer> <unique> <C-r> <Plug>(github-issues-reload)
 endfunction
@@ -271,6 +274,16 @@ function! s:UI.action()  " {{{2
       endtry
       close
     endif
+  endif
+endfunction
+
+
+
+function! s:UI.redraw()  " {{{2
+  if b:github_issues_buf ==# 'view_issue_list'
+    call self.view('issue_list')
+  elseif b:github_issues_buf ==# 'view_issue'
+    call self.view('issue', self.issue.number)
   endif
 endfunction
 
