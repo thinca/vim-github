@@ -164,12 +164,6 @@ endfunction
 
 
 
-function! github#button()  " {{{2
-  return github#get_text_on_cursor('\[\[.\{-}\]\]')
-endfunction
-
-
-
 function! github#get_text_on_cursor(pat)  " {{{2
   let line = getline('.')
   let pos = col('.')

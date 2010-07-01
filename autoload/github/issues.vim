@@ -170,7 +170,7 @@ endfunction
 
 
 function! s:feature.action()  " {{{2
-  let button = github#button()
+  let button = github#get_text_on_cursor('\[\[.\{-}\]\]')
   if b:github_issues_buf ==# 'view_issue_list'
     if button ==# '[[new issue]]'
       call self.edit('issue')
