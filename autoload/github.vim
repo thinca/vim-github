@@ -21,6 +21,8 @@ function! s:prototype.new(...)  " {{{2
   return obj
 endfunction
 
+
+
 " API
 let s:Github = s:prototype.new()  " {{{1
 function! s:Github.initialize(user, token)  " {{{2
@@ -76,14 +78,15 @@ endfunction
 
 
 
+" UI
 let s:UI = s:prototype.new()  " {{{1
-function! s:UI.initialize()  " {{{2
-endfunction
 function! s:UI.opened()  " {{{2
 endfunction
+
 function! s:UI.header()  " {{{2
   return ''
 endfunction
+
 function! s:UI.view(with, ...)  " {{{2
   let ft = 'github-' . self.name
   let bufnr = 0
@@ -124,6 +127,7 @@ function! s:UI.view(with, ...)  " {{{2
   setlocal nomodifiable readonly
   1
 endfunction
+
 function! s:UI.edit(template, ...)  " {{{2
   let ft = 'github-' . self.name
   let name = 'edit_' . a:template
@@ -158,6 +162,12 @@ endfunction
 
 
 " Interfaces.  {{{1
+function! github#base()  " {{{2
+  return s:prototype.new()
+endfunction
+
+
+
 function! github#connect(path, ...)  " {{{2
   return s:Github.new(g:github#user, g:github#token).connect(a:path, a:000)
 endfunction
