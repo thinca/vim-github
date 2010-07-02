@@ -138,7 +138,7 @@ function! s:UI.edit_issue(...)  " {{{2
   endif
   let text += ['title: ' . title]
   if !empty(labels)
-    call add(text, 'labels: ' . join(labels, ', ')
+    call add(text, 'labels: ' . join(labels, ', '))
   endif
   return text + ['body:'] + split(body, '\r\?\n', 1)
 endfunction
