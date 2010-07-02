@@ -32,10 +32,10 @@ function! s:Issues.update_list()  " {{{2
   let self.issues = sort(open.issues + closed.issues, s:func('order_by_number'))
 endfunction
 
-function! s:Issues.create_new_issue(title, body, labels)  " {{{2
+function! s:Issues.create_new_issue(title, body)  " {{{2
   let res = self.connect('open', {'title': a:title, 'body': a:body})
-  " TODO: Update labels.
   call add(self.issues, res.issue)
+  return res
 endfunction
 
 function! s:Issues.update_issue(number, title, body)  " {{{2
@@ -54,6 +54,36 @@ function! s:Issues.fetch_comments(number, ...)  " {{{2
   let force = a:0 && a:1
   if force || type(issue.comments) == type(0)
     let issue.comments = self.connect('comments', issue.number).comments
+  endif
+endfunction
+
+function! s:Issues.add_labels(label, number)  " {{{2
+  return self.update_labels(a:label, a:number, 'add')
+endfunction
+
+function! s:Issues.remove_labels(label, number)  " {{{2
+  return self.update_labels(a:label, a:number, 'remove')
+endfunction
+
+function! s:Issues.update_labels(label, number, ...)  " {{{2
+  " op = 'add'/'remove'/'all'
+  let op = a:0 ? a:1 : 'all'
+  if op ==# 'all'
+    let current_labels = self.get(a:number).labels
+    let adds = s:list_sub(a:label, current_labels)
+    let removes = s:list_sub(current_labels, a:label)
+    call self.add_labels(adds, a:number)
+    call self.remove_labels(removes, a:number)
+  else
+    let g:label = a:label
+    for l in type(a:label) == type([]) ? a:label : [a:label]
+      let args = ['label/' . op, a:label] + (a:number != 0 ? [a:number] : [])
+      let new_labels = call(self.connect, args, self)
+    endfor
+    if a:number != 0 && exists('new_labels')
+      let target = self.get(a:number)
+      let target.labels = new_labels.labels
+    endif
   endif
 endfunction
 
@@ -244,14 +274,25 @@ function! s:UI.action()  " {{{2
           throw 'github: issues: Title is empty.'
         endif
 
+        let labelsline = search('^\clabels:', 'Wn', bodystart)
+        if labelsline
+          let labels = filter(split(matchstr(getline(labelsline),
+          \                   '^\w\+:\s*\zs.\{-}\ze\s*$'), '\s*,\s*'),
+          \                   'v:val !~ "^\\s*$"')
+        endif
+
         let numberline = search('^\cnumber:', 'Wn', bodystart)
         if numberline
           let number = matchstr(getline(numberline), '^\w\+:\s*\zs.\{-}\ze\s*$')
           call self.issues.update_issue(number, title, body)
 
         else
-          " TODO: Pass labels.
-          call self.issues.create_new_issue(title, body, [])
+          let issue = self.issues.create_new_issue(title, body)
+          let number = issue.number
+        endif
+
+        if exists('labels')
+          call self.issues.update_labels(labels, number)
         endif
 
       finally
@@ -341,6 +382,16 @@ function! s:compare_list(a, b)  " {{{2
     return a:a.state ==# 'open' ? -1 : 1
   endif
   return a:a.number - a:b.number
+endfunction
+
+
+
+function! s:list_sub(a, b)  " {{{2
+  " Difference of list (a - b)
+  let a = copy(a:a)
+  call map(reverse(sort(filter(map(copy(a:b), 'index(a, v:val)'),
+  \                            '0 <= v:val'))), 'remove(a, v:val)')
+  return a
 endfunction
 
 
