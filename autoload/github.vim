@@ -244,6 +244,7 @@ endfunction
 
 function! s:parse_json(json)  " {{{2
   if !s:validate_json(a:json)
+    call g:github#debug_log("response:\n" . a:json)
     throw 'github: Invalid json.'
   endif
   let l:true = 1
