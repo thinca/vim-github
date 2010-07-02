@@ -33,9 +33,9 @@ function! s:Issues.update_list()  " {{{2
 endfunction
 
 function! s:Issues.create_new_issue(title, body)  " {{{2
-  let res = self.connect('open', {'title': a:title, 'body': a:body})
-  call add(self.issues, res.issue)
-  return res
+  let issue = self.connect('open', {'title': a:title, 'body': a:body}).issue
+  call add(self.issues, issue)
+  return issue
 endfunction
 
 function! s:Issues.update_issue(number, title, body)  " {{{2
