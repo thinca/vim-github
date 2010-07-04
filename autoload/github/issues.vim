@@ -113,22 +113,24 @@ endfunction
 
 
 
-function! s:UI.opened()  " {{{2
-  nnoremap <buffer> <silent> <Plug>(github-issues-action)
-  \        :<C-u>call b:github_issues.action()<CR>
-  nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
-  \        :<C-u>call b:github_issues.view('issue_list')<CR>
-  nnoremap <buffer> <silent> <Plug>(github-issues-redraw)
-  \        :<C-u>call b:github_issues.redraw()<CR>
-  nnoremap <buffer> <silent> <Plug>(github-issues-reload)
-  \        :<C-u>call b:github_issues.reload()<CR>
+function! s:UI.opened(type)  " {{{2
+  if a:type ==# 'view'
+    nnoremap <buffer> <silent> <Plug>(github-issues-action)
+    \        :<C-u>call b:github_issues.action()<CR>
+    nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
+    \        :<C-u>call b:github_issues.view('issue_list')<CR>
+    nnoremap <buffer> <silent> <Plug>(github-issues-redraw)
+    \        :<C-u>call b:github_issues.redraw()<CR>
+    nnoremap <buffer> <silent> <Plug>(github-issues-reload)
+    \        :<C-u>call b:github_issues.reload()<CR>
 
-  silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
-  silent! nmap <buffer> <unique> <BS> <Plug>(github-issues-issue-list)
-  silent! nmap <buffer> <unique> <C-t> <Plug>(github-issues-issue-list)
-  silent! nmap <buffer> <unique> r <Plug>(github-issues-redraw)
-  silent! nmap <buffer> <unique> R <Plug>(github-issues-reload)
-  silent! nmap <buffer> <unique> <C-r> <Plug>(github-issues-reload)
+    silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
+    silent! nmap <buffer> <unique> <BS> <Plug>(github-issues-issue-list)
+    silent! nmap <buffer> <unique> <C-t> <Plug>(github-issues-issue-list)
+    silent! nmap <buffer> <unique> r <Plug>(github-issues-redraw)
+    silent! nmap <buffer> <unique> R <Plug>(github-issues-reload)
+    silent! nmap <buffer> <unique> <C-r> <Plug>(github-issues-reload)
+  endif
 endfunction
 
 

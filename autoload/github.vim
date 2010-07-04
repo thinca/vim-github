@@ -80,7 +80,7 @@ endfunction
 
 " UI
 let s:UI = s:Base.new()  " {{{1
-function! s:UI.opened()  " {{{2
+function! s:UI.opened(type)  " {{{2
 endfunction
 
 function! s:UI.header()  " {{{2
@@ -112,7 +112,7 @@ function! s:UI.view(with, ...)  " {{{2
     setlocal nonumber nolist nowrap
     let &l:filetype = ft
 
-    call self.opened()
+    call self.opened('view')
   else
     setlocal modifiable noreadonly
     silent % delete _
@@ -141,7 +141,7 @@ function! s:UI.edit(template, ...)  " {{{2
   setlocal buftype=nofile noswapfile bufhidden=wipe
   let &l:filetype = ft
 
-  call self.opened()
+  call self.opened('edit')
 
   let b:github_{self.name}_buf = name
   silent 0put =self.header()
