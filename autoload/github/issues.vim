@@ -114,9 +114,12 @@ endfunction
 
 
 function! s:UI.opened(type)  " {{{2
+  nnoremap <buffer> <silent> <Plug>(github-issues-action)
+  \        :<C-u>call b:github_issues.action()<CR>
+
+  silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
+
   if a:type ==# 'view'
-    nnoremap <buffer> <silent> <Plug>(github-issues-action)
-    \        :<C-u>call b:github_issues.action()<CR>
     nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
     \        :<C-u>call b:github_issues.view('issue_list')<CR>
     nnoremap <buffer> <silent> <Plug>(github-issues-redraw)
@@ -124,7 +127,6 @@ function! s:UI.opened(type)  " {{{2
     nnoremap <buffer> <silent> <Plug>(github-issues-reload)
     \        :<C-u>call b:github_issues.reload()<CR>
 
-    silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
     silent! nmap <buffer> <unique> <BS> <Plug>(github-issues-issue-list)
     silent! nmap <buffer> <unique> <C-t> <Plug>(github-issues-issue-list)
     silent! nmap <buffer> <unique> r <Plug>(github-issues-redraw)
