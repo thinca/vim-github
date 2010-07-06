@@ -64,7 +64,7 @@ function! s:Github.connect(path, ...)  " {{{2
       let param += ['-F', key . '=' . val]
     endfor
 
-    let res = s:system([self.curl_cmd, '-s',
+    let res = s:system([self.curl_cmd, '-s', '-k',
     \   printf('%s://%s%s%s', self.protocol, s:domain, s:base_path, path)]
     \   + param)
   finally
