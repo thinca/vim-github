@@ -271,6 +271,10 @@ function! s:system(args)  " {{{2
   let args = type == type([]) ? a:args :
   \          type == type('') ? split(a:args) : []
 
+  if g:github#use_vimproc
+    return vimproc#system(args)
+  endif
+
   if s:is_win
     let args[0] = s:cmdpath(args[0])
     let q = '"'
@@ -346,6 +350,10 @@ endif
 
 if !exists('g:github#use_https')  " {{{2
   let g:github#use_https = 0
+endif
+
+if !exists('g:github#use_vimproc')
+  let g:github#use_vimproc = exists('*vimproc#system')
 endif
 
 if !exists('g:github#debug')  " {{{2
