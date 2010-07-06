@@ -60,7 +60,7 @@ function! s:Github.connect(path, ...)  " {{{2
     endfor
 
     let param = []
-    for [key, val] in items(params)
+    for [key, val] in items(postdata)
       let param += ['-F', key . '=' . val]
     endfor
 
