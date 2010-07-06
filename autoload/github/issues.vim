@@ -30,6 +30,11 @@ function! s:Issues.update_list()  " {{{2
   let closed = self.connect('list', 'closed')
 
   let self.issues = sort(open.issues + closed.issues, s:func('order_by_number'))
+  for i in self.issues
+    if i.comments is 0
+      let i.comments = []
+    endif
+  endfor
 endfunction
 
 function! s:Issues.create_new_issue(title, body)  " {{{2
