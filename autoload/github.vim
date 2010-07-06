@@ -9,6 +9,7 @@ set cpo&vim
 
 let s:domain = 'github.com'
 let s:base_path = '/api/v2/json'
+let s:is_win = has('win16') || has('win32') || has('win64')
 
 
 
@@ -48,23 +49,24 @@ function! s:Github.connect(path, ...)  " {{{2
   endfor
 
   let files = []
-
   try
-    let param = printf('-F "login=%s" -F "token=%s"',
-    \                  self.user, self.token)
+    let postdata = {'login': self.user, 'token': self.token}
 
     for [key, val] in items(params)
       let f = tempname()
       call add(files, f)
       call writefile(split(s:iconv(val, &encoding, 'utf-8'), "\n", 1), f, 'b')
-      let param .= printf(' -F "%s=<%s"', key, f)
+      let postdata[key] = '<' . f
     endfor
 
-    let cmd = printf('%s -s %s %s://%s%s%s',
-    \ self.curl_cmd, param,
-    \ self.protocol, s:domain, s:base_path, path)
-    call github#debug_log(cmd)
-    let res = system(cmd)
+    let param = []
+    for [key, val] in items(params)
+      let param += ['-F', key . '=' . val]
+    endfor
+
+    let res = s:system([self.curl_cmd, '-s',
+    \   printf('%s://%s%s%s', self.protocol, s:domain, s:base_path, path)]
+    \   + param)
   finally
     for f in files
       call delete(f)
@@ -264,6 +266,50 @@ function! s:iconv(expr, from, to)  " {{{2
 endfunction
 
 
+function! s:system(args)  " {{{2
+  let type = type(a:args)
+  let args = type == type([]) ? a:args :
+  \          type == type('') ? split(a:args) : []
+
+  if s:is_win
+    let args[0] = s:cmdpath(args[0])
+    let q = '"'
+    let cmd = q . join(map(args,
+    \   'q . substitute(escape(v:val, q), "[<>^|&]", "^\\0", "g") . q'),
+    \   ' ') . q
+  else
+    let cmd = join(map(args, 'shellescape(v:val)'), ' ')
+  endif
+  call github#debug_log(cmd)
+  return system(cmd)
+endfunction
+
+
+
+function! s:cmdpath(cmd)  " {{{2
+  " Search the fullpath of command for MS Windows.
+  let full = glob(a:cmd)
+  if a:cmd ==? full
+    " Already fullpath.
+    return a:cmd
+  endif
+
+  let extlist = split($PATHEXT, ';')
+  if a:cmd =~? '\V\%(' . substitute($PATHEXT, ';', '\\|', 'g') . '\)\$'
+    call insert(extlist, '', 0)
+  endif
+  for dir in split($PATH, ';')
+    for ext in extlist
+      let full = glob(dir . '\' . a:cmd . ext)
+      if full != ''
+        return full
+      endif
+    endfor
+  endfor
+  return ''
+endfunction
+
+
 
 " Debug.  {{{1
 function! github#debug_log(mes, ...)  " {{{2
@@ -286,12 +332,12 @@ endfunction
 " Options.  {{{1
 if !exists('g:github#user')  " {{{2
   let g:github#user =
-  \   matchstr(system('git config --global github.user'), '\w*')
+  \   matchstr(s:system('git config --global github.user'), '\w*')
 endif
 
 if !exists('g:github#token')  " {{{2
   let g:github#token =
-  \   matchstr(system('git config --global github.token'), '\w*')
+  \   matchstr(s:system('git config --global github.token'), '\w*')
 endif
 
 if !exists('g:github#curl_cmd')  " {{{2
