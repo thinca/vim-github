@@ -357,6 +357,9 @@ endfunction
 
 
 function! s:UI.invoke(args)  " {{{2
+  if empty(a:args)
+    throw 'github: issues: Require the repository name.'
+  endif
   let repos = a:args[0]
   let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
   \                                    : [g:github#user, repos]
