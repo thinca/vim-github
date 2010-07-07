@@ -334,16 +334,6 @@ endfunction
 
 
 " Options.  {{{1
-if !exists('g:github#user')  " {{{2
-  let g:github#user =
-  \   matchstr(s:system('git config --global github.user'), '\w*')
-endif
-
-if !exists('g:github#token')  " {{{2
-  let g:github#token =
-  \   matchstr(s:system('git config --global github.token'), '\w*')
-endif
-
 if !exists('g:github#curl_cmd')  " {{{2
   let g:github#curl_cmd = 'curl'
 endif
@@ -362,6 +352,16 @@ endif
 
 if !exists('g:github#debug_file')  " {{{2
   let g:github#debug_file = ''
+endif
+
+if !exists('g:github#user')  " {{{2
+  let g:github#user =
+  \   matchstr(s:system('git config --global github.user'), '\w*')
+endif
+
+if !exists('g:github#token')  " {{{2
+  let g:github#token =
+  \   matchstr(s:system('git config --global github.token'), '\w*')
 endif
 
 
