@@ -132,11 +132,11 @@ function! s:UI.opened(type)  " {{{2
     nnoremap <buffer> <silent> <Plug>(github-issues-reload)
     \        :<C-u>call b:github_issues.reload()<CR>
 
-    silent! nmap <buffer> <unique> <BS> <Plug>(github-issues-issue-list)
-    silent! nmap <buffer> <unique> <C-t> <Plug>(github-issues-issue-list)
-    silent! nmap <buffer> <unique> r <Plug>(github-issues-redraw)
-    silent! nmap <buffer> <unique> R <Plug>(github-issues-reload)
-    silent! nmap <buffer> <unique> <C-r> <Plug>(github-issues-reload)
+    nmap <buffer> <BS> <Plug>(github-issues-issue-list)
+    nmap <buffer> <C-t> <Plug>(github-issues-issue-list)
+    nmap <buffer> r <Plug>(github-issues-redraw)
+    nmap <buffer> R <Plug>(github-issues-reload)
+    nmap <buffer> <C-r> <Plug>(github-issues-reload)
   endif
 endfunction
 
