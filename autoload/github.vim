@@ -112,9 +112,10 @@ function! s:UI.view(with, ...)  " {{{2
     setlocal nobuflisted
     setlocal buftype=nofile noswapfile bufhidden=wipe
     setlocal nonumber nolist nowrap
-    let &l:filetype = ft
 
     call self.opened('view')
+
+    let &l:filetype = ft
   else
     setlocal modifiable noreadonly
     silent % delete _
