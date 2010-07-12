@@ -8,6 +8,10 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 
+" Keep the issues.
+let s:repos = {}
+
+
 " Isseus object  {{{1
 let s:Issues = github#base()
 let s:Issues.name = 'issues'
@@ -112,8 +116,6 @@ let s:UI = {'name': 'issues'}
 
 function! s:UI.initialize(issues)  " {{{2
   let self.issues = a:issues
-
-  call self.issues.update_list()
 endfunction
 
 
@@ -364,7 +366,14 @@ function! s:UI.invoke(args)  " {{{2
   let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
   \                                    : [g:github#user, repos]
 
-  let issues = s:Issues.new(user, repos)
+  let key = user . '/' . repos
+  if has_key(s:repos, key)
+    let issues = s:repos[key]
+  else
+    let issues = s:Issues.new(user, repos)
+    call issues.update_list()
+    let s:repos[key] = issues
+  endif
   let ui = self.new(issues)
 
   if len(a:args) == 1
