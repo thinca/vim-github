@@ -178,9 +178,7 @@ function! s:UI.edit_issue(...)  " {{{2
     let text += ['number: ' . a:1.number]
   endif
   let text += ['title: ' . title]
-  if !empty(labels)
-    call add(text, 'labels: ' . join(labels, ', '))
-  endif
+  call add(text, 'labels: ' . join(labels, ', '))
   return text + ['body:'] + split(body, '\r\?\n', 1)
 endfunction
 
@@ -206,13 +204,9 @@ function! s:UI.issue_layout(issue)  " {{{2
   \ i.number . ': ' . i.title,
   \ 'state: ' . i.state,
   \ 'user: ' . i.user,
+  \ 'labels: ' . join(i.labels, ', '),
+  \ 'created: ' . i.created_at,
   \ ]
-
-  if !empty(i.labels)
-    let lines += ['labels: ' . join(i.labels, ', ')]
-  endif
-
-  let lines += ['created: ' . i.created_at]
 
   if i.created_at !=# i.updated_at
     let lines += ['updated: ' . i.updated_at]
