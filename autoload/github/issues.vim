@@ -214,6 +214,9 @@ function! s:UI.issue_layout(issue)  " {{{2
   if i.closed_at != 0
     let lines += ['closed: ' . i.closed_at]
   endif
+  if i.votes != 0
+    let lines += ['votes: ' . i.votes]
+  endif
 
   let lines += [''] + split(i.body, '\r\?\n') + ['', '']
 
