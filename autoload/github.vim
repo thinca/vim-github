@@ -73,7 +73,7 @@ function! s:Github.connect(path, ...)  " {{{2
     endfor
   endtry
 
-  let r = s:iconv(res, 'utf-8', &encoding)
+  let res = s:iconv(res, 'utf-8', &encoding)
 
   return raw ? res : s:parse_json(res)
 endfunction
