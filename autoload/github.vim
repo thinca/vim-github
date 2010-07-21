@@ -75,6 +75,10 @@ function! s:Github.connect(path, ...)  " {{{2
 
   let res = s:iconv(res, 'utf-8', &encoding)
 
+  if !raw
+    call github#debug_log("response:\n" . res)
+  endif
+
   return raw ? res : s:parse_json(res)
 endfunction
 
@@ -247,7 +251,6 @@ endfunction
 
 function! s:parse_json(json)  " {{{2
   if !s:validate_json(a:json)
-    call github#debug_log("response:\n" . a:json)
     throw 'github: Invalid json.'
   endif
   let l:true = 1
