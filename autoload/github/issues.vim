@@ -116,6 +116,9 @@ let s:UI = {'name': 'issues'}
 
 function! s:UI.initialize(issues)  " {{{2
   let self.issues = a:issues
+
+  " Save the sorted list
+  let self.issue_list = sort(self.issues.list(), s:func('compare_list'))
 endfunction
 
 
@@ -164,8 +167,7 @@ endfunction
 
 function! s:UI.view_issue_list()  " {{{2
   return ['[[new issue]]'] +
-  \ map(sort(self.issues.list(), s:func('compare_list')),
-  \     'self.line_format(v:val)')
+  \ map(copy(self.issue_list), 'self.line_format(v:val)')
 endfunction
 
 
