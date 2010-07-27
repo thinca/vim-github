@@ -144,6 +144,18 @@ endfunction
 
 
 
+function! s:UI.updated(type, name)  " {{{2
+  if a:type ==# 'view'
+    if a:name ==# 'issue_list'
+      if has_key(self, 'issue')
+        call search('^\s*' . self.issue.number . ':', 'w')
+      endif
+    endif
+  endif
+endfunction
+
+
+
 function! s:UI.header()  " {{{2
   return printf('Github Issues - %s/%s', self.issues.user, self.issues.repos)
 endfunction

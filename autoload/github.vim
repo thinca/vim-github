@@ -89,6 +89,9 @@ let s:UI = s:Base.new()  " {{{1
 function! s:UI.opened(type)  " {{{2
 endfunction
 
+function! s:UI.updated(type, name)  " {{{2
+endfunction
+
 function! s:UI.header()  " {{{2
   return ''
 endfunction
@@ -131,8 +134,9 @@ function! s:UI.view(with, ...)  " {{{2
   silent 0put =self.header()
   silent $put =call(self[name], a:000, self)
 
-  setlocal nomodifiable readonly
   1
+  call self.updated('view', a:with)
+  setlocal nomodifiable readonly
 endfunction
 
 function! s:UI.edit(template, ...)  " {{{2
@@ -155,6 +159,7 @@ function! s:UI.edit(template, ...)  " {{{2
   silent $put =call(self[name], a:000, self)
 
   1
+  call self.updated('view', a:template)
 endfunction
 
 
