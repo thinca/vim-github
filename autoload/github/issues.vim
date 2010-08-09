@@ -116,7 +116,10 @@ let s:UI = {'name': 'issues'}
 
 function! s:UI.initialize(issues)  " {{{2
   let self.issues = a:issues
+  call self.update_issue_list()
+endfunction
 
+function! s:UI.update_issue_list()
   " Save the sorted list
   let self.issue_list = sort(self.issues.list(), s:func('compare_list'))
 endfunction
@@ -343,6 +346,7 @@ function! s:UI.action()  " {{{2
       close
     endif
   endif
+  call self.update_issue_list()
 endfunction
 
 
@@ -360,6 +364,7 @@ endfunction
 function! s:UI.reload()  " {{{2
   if b:github_issues_buf ==# 'view_issue_list'
     call self.issues.update_list()
+    call self.update_issue_list()
     call self.view('issue_list')
   elseif b:github_issues_buf ==# 'view_issue'
     let self.issue.comments = 0
