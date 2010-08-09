@@ -145,6 +145,11 @@ function! s:UI.opened(type)  " {{{2
     nmap <buffer> r <Plug>(github-issues-redraw)
     nmap <buffer> R <Plug>(github-issues-reload)
     nmap <buffer> <C-r> <Plug>(github-issues-reload)
+
+    augroup plugin-github-issues
+      autocmd! * <buffer>
+      autocmd BufEnter <buffer> call b:github_issues.redraw()
+    augroup END
   endif
 endfunction
 
@@ -323,7 +328,6 @@ function! s:UI.action()  " {{{2
       finally
         call setpos('.', c)
       endtry
-      close
     endif
   elseif b:github_issues_buf ==# 'edit_comment'
     if button ==# '[[POST]]'
@@ -343,10 +347,14 @@ function! s:UI.action()  " {{{2
       finally
         call setpos('.', c)
       endtry
-      close
     endif
   endif
+
   call self.update_issue_list()
+
+  if b:github_issues_buf =~# '^edit_' && button ==# '[[POST]]'
+    close
+  endif
 endfunction
 
 
