@@ -84,7 +84,6 @@ function! s:Issues.update_labels(label, number, ...)  " {{{2
     call self.add_labels(adds, a:number)
     call self.remove_labels(removes, a:number)
   else
-    let g:label = a:label
     for l in type(a:label) == type([]) ? a:label : [a:label]
       let args = ['label/' . op, a:label] + (a:number != 0 ? [a:number] : [])
       let new_labels = call(self.connect, args, self)
