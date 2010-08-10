@@ -40,16 +40,12 @@ function! s:Issues.update_list()  " {{{2
 
   let self.issues = sort(open.issues + closed.issues,
   \                      s:func('order_by_number'))
-  for i in self.issues
-    if i.comments is 0
-      let i.comments = []
-    endif
-  endfor
+  call map(self.issues, 's:normalize_issue(v:val)')
 endfunction
 
 function! s:Issues.create_new_issue(title, body)  " {{{2
   let issue = self.connect('open', {'title': a:title, 'body': a:body}).issue
-  call add(self.issues, issue)
+  call add(self.issues, s:normalize_issue(issue))
   return issue
 endfunction
 
@@ -112,6 +108,13 @@ endfunction
 function! s:Issues.connect(action, ...)  " {{{2
   return github#connect('/issues', a:action, self.user, self.repos,
   \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
+endfunction
+
+function! s:normalize_issue(issue)  " {{{2
+  if a:issue.comments is 0
+    let a:issue.comments = []
+  endif
+  return a:issue
 endfunction
 
 
