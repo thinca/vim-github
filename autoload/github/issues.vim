@@ -268,7 +268,17 @@ endfunction
 
 " Control.  {{{1
 function! s:UI.action()  " {{{2
-  let button = github#get_text_on_cursor('\[\[.\{-}\]\]')
+  try
+    call self.perform(github#get_text_on_cursor('\[\[.\{-}\]\]'))
+  catch /^github:/
+    echohl ErrorMsg
+    echomsg v:exception
+    echohl None
+  endtry
+endfunction
+
+function! s:UI.perform(button)  " {{{2
+  let button = a:button
   if b:github_issues_buf ==# 'view_issue_list'
     if button ==# '[[new issue]]'
       call self.edit('issue')

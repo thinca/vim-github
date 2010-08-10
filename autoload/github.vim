@@ -222,14 +222,17 @@ endfunction
 " Main commands.  {{{1
 function! github#invoke(argline)  " {{{2
   " The simplest implementation.
-  let [feat; args] = split(a:argline, '\s\+')
-  if !has_key(s:features, feat)
+  try
+    let [feat; args] = split(a:argline, '\s\+')
+    if !has_key(s:features, feat)
+      throw 'github: Specified feature is not registered: ' . feat
+    endif
+    call s:features[feat].invoke(args)
+  catch /^github:/
     echohl ErrorMsg
-    echomsg 'github: Specified feature is not registered: ' . feat
+    echomsg v:exception
     echohl None
-    return
-  endif
-  call s:features[feat].invoke(args)
+  endtry
 endfunction
 
 
