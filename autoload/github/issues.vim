@@ -38,7 +38,8 @@ function! s:Issues.update_list()  " {{{2
   let open = self.connect('list', 'open')
   let closed = self.connect('list', 'closed')
 
-  let self.issues = sort(open.issues + closed.issues, s:func('order_by_number'))
+  let self.issues = sort(open.issues + closed.issues,
+  \                      s:func('order_by_number'))
   for i in self.issues
     if i.comments is 0
       let i.comments = []
@@ -317,7 +318,8 @@ function! s:UI.action()  " {{{2
 
         let numberline = search('^\cnumber:', 'Wn', bodystart)
         if numberline
-          let number = matchstr(getline(numberline), '^\w\+:\s*\zs.\{-}\ze\s*$')
+          let number = matchstr(getline(numberline),
+          \                     '^\w\+:\s*\zs.\{-}\ze\s*$')
           call self.issues.update_issue(number, title, body)
 
         else
