@@ -29,6 +29,11 @@ function! s:Issues.list()  " {{{2
   return copy(self.issues)
 endfunction
 
+function! s:Issues.comment_count(number)  " {{{2
+  let comments = self.get(a:number).comments
+  return type(comments) == type(0) ? comments : len(comments)
+endfunction
+
 function! s:Issues.update_list()  " {{{2
   let open = self.connect('list', 'open')
   let closed = self.connect('list', 'closed')
