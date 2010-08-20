@@ -247,12 +247,13 @@ endfunction
 function! s:validate_json(str)  " {{{2
   " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm
 
-  let str = a:str
-  let str = substitute(str, '\\\%(["\\/bfnrt]\|u[0-9a-fA-F]\{4}\)', '\@', 'g')
-  let str = substitute(str, '"[^\"\\\n\r]*\"\|true\|false\|null\|-\?\d\+' .
-  \                    '\%(\.\d*\)\?\%([eE][+\-]\{-}\d\+\)\?', ']', 'g')
-  let str = substitute(str, '\%(^\|:\|,\)\%(\s*\[\)\+', '', 'g')
-  return str != '' && str =~ '^[\],:{} \t\n]*$'
+  return a:str != '' &&
+  \ substitute(substitute(substitute(
+  \ a:str,
+  \ '\\\%(["\\/bfnrt]\|u[0-9a-fA-F]\{4}\)', '\@', 'g'),
+  \ '"[^\"\\\n\r]*\"\|true\|false\|null\|-\?\d\+'
+  \ . '\%(\.\d*\)\?\%([eE][+\-]\{-}\d\+\)\?', ']', 'g'),
+  \ '\%(^\|:\|,\)\%(\s*\[\)\+', '', 'g') =~ '^[\],:{} \t\n]*$'
 endfunction
 
 
