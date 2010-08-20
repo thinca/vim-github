@@ -75,10 +75,6 @@ function! s:Github.connect(path, ...)  " {{{2
 
   let res = s:iconv(res, 'utf-8', &encoding)
 
-  if !raw
-    call github#debug_log("response:\n" . res)
-  endif
-
   return raw ? res : s:parse_json(res)
 endfunction
 
@@ -260,12 +256,18 @@ endfunction
 
 function! s:parse_json(json)  " {{{2
   if !s:validate_json(a:json)
+    call github#debug_log("Invalid response:\n" . a:json)
     throw 'github: Invalid json.'
   endif
   let l:true = 1
   let l:false = 0
   let l:null = 0
-  return eval(a:json)
+  let json = eval(a:json)
+  if g:github#debug
+    call github#debug_log("response json:\n" .
+    \ (exists('*PP') ? PP(json) : string(json)))
+  endif
+  return json
 endfunction
 
 
@@ -285,6 +287,7 @@ function! s:system(args)  " {{{2
   \          type == type('') ? split(a:args) : []
 
   if g:github#use_vimproc
+    call github#debug_log(args)
     return vimproc#system(args)
   endif
 
