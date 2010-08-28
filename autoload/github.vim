@@ -358,7 +358,7 @@ if !exists('g:github#use_https')  " {{{2
   let g:github#use_https = 0
 endif
 
-if !exists('g:github#use_vimproc')
+if !exists('g:github#use_vimproc')  " {{{2
   let g:github#use_vimproc =
   \   globpath(&runtimepath, 'autoload/vimproc.vim') != ''
 endif
