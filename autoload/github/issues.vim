@@ -129,7 +129,13 @@ endfunction
 
 function! s:UI.update_issue_list()
   " Save the sorted list
-  let self.issue_list = sort(self.issues.list(), s:func('compare_list'))
+  let list = sort(self.issues.list(), s:func('compare_list'))
+  let self.issue_list = list
+  let length = len(self.issue_list)
+  let self.rev_index = range(length)
+  for i in range(length)
+    let self.rev_index[list[i].number - 1] = i
+  endfor
 endfunction
 
 
@@ -147,12 +153,18 @@ function! s:UI.opened(type)  " {{{2
     \        :<C-u>call b:github_issues.redraw()<CR>
     nnoremap <buffer> <silent> <Plug>(github-issues-reload)
     \        :<C-u>call b:github_issues.reload()<CR>
+    nnoremap <buffer> <silent> <Plug>(github-issues-next)
+    \        :<C-u>call b:github_issues.move(v:count1)<CR>
+    nnoremap <buffer> <silent> <Plug>(github-issues-prev)
+    \        :<C-u>call b:github_issues.move(-v:count1)<CR>
 
     nmap <buffer> <BS> <Plug>(github-issues-issue-list)
     nmap <buffer> <C-t> <Plug>(github-issues-issue-list)
     nmap <buffer> r <Plug>(github-issues-redraw)
     nmap <buffer> R <Plug>(github-issues-reload)
     nmap <buffer> <C-r> <Plug>(github-issues-reload)
+    nmap <buffer> <C-j> <Plug>(github-issues-next)
+    nmap <buffer> <C-k> <Plug>(github-issues-prev)
 
     augroup plugin-github-issues
       autocmd! * <buffer>
@@ -168,6 +180,7 @@ function! s:UI.updated(type, name)  " {{{2
     if a:name ==# 'issue_list'
       if has_key(self, 'issue')
         call search('^\s*' . self.issue.number . ':', 'w')
+        call remove(self, 'issue')
       endif
     endif
   endif
@@ -396,6 +409,22 @@ function! s:UI.reload()  " {{{2
   elseif b:github_issues_buf ==# 'view_issue'
     let self.issue.comments = 0
     call self.view('issue', self.issue.number)
+  endif
+endfunction
+
+
+
+function! s:UI.move(cnt)  " {{{2
+  let idx = (has_key(self, 'issue') ? self.rev_index[self.issue.number - 1]
+  \                                 : -1) + a:cnt
+  let length = len(self.issue_list)
+  if idx == -2  " <C-k> in issue list.
+    let idx = length - 1
+  endif
+  if idx < 0 || length <= idx
+    call self.view('issue_list')
+  else
+    call self.view('issue', self.issue_list[idx].number)
   endif
 endfunction
 
