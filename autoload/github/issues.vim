@@ -106,8 +106,12 @@ function! s:Issues.reopen(number)  " {{{2
 endfunction
 
 function! s:Issues.connect(action, ...)  " {{{2
-  return github#connect('/issues', a:action, self.user, self.repos,
+  let res = github#connect('/issues', a:action, self.user, self.repos,
   \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
+  if has_key(res, 'error')
+    throw 'github: issues: API error: ' . res.error
+  endif
+  return res
 endfunction
 
 function! s:normalize_issue(issue)  " {{{2
