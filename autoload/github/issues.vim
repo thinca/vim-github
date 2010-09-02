@@ -12,7 +12,7 @@ set cpo&vim
 let s:repos = {}
 
 
-" Isseus object  {{{1
+" Issues object  {{{1
 let s:Issues = github#base()
 let s:Issues.name = 'issues'
 
