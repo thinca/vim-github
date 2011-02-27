@@ -258,7 +258,7 @@ function! s:UI.issue_layout(issue)  " {{{2
   if i.created_at !=# i.updated_at
     let lines += ['updated: ' . i.updated_at]
   endif
-  if i.closed_at != 0
+  if has_key(i, 'closed_at') && i.closed_at != 0
     let lines += ['closed: ' . i.closed_at]
   endif
   if i.votes != 0
