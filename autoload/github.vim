@@ -247,7 +247,7 @@ function! s:parse_json(json)
   let l:true = 1
   let l:false = 0
   let l:null = 0
-  let json = eval(a:json)
+  sandbox let json = eval(a:json)
   if g:github#debug
     call github#debug_log("response json:\n" .
     \ (exists('*PP') ? PP(json) : string(json)))
