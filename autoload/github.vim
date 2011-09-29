@@ -23,9 +23,8 @@ function! s:Base.new(...)
 endfunction
 
 
-
-" API
-let s:Github = s:Base.new()  " {{{1
+" API  {{{1
+let s:Github = s:Base.new()
 function! s:Github.initialize(user, token)
   let [self.user, self.token] = [a:user, a:token]
 
@@ -79,9 +78,8 @@ function! s:Github.connect(path, ...)
 endfunction
 
 
-
-" UI
-let s:UI = s:Base.new()  " {{{1
+" UI  {{{1
+let s:UI = s:Base.new()
 function! s:UI.opened(type)
 endfunction
 
@@ -159,7 +157,6 @@ function! s:UI.edit(template, ...)
 endfunction
 
 
-
 " Features manager.  {{{1
 let s:features = {}
 
@@ -174,13 +171,9 @@ function! github#base()
   return s:Base.new()
 endfunction
 
-
-
 function! github#connect(path, ...)
   return s:Github.new(g:github#user, g:github#token).connect(a:path, a:000)
 endfunction
-
-
 
 function! github#flatten(list)
   let list = []
@@ -194,8 +187,6 @@ function! github#flatten(list)
   endfor
   return list
 endfunction
-
-
 
 function! github#get_text_on_cursor(pat)
   let line = getline('.')
@@ -214,7 +205,6 @@ function! github#get_text_on_cursor(pat)
 endfunction
 
 
-
 " Main commands.  {{{1
 function! github#invoke(argline)
   " The simplest implementation.
@@ -231,12 +221,9 @@ function! github#invoke(argline)
   endtry
 endfunction
 
-
-
 function! github#complete(lead, cmd, pos)
   return keys(s:features)
 endfunction
-
 
 
 " JSON and others utilities.  {{{1
@@ -251,8 +238,6 @@ function! s:validate_json(str)
   \ . '\%(\.\d*\)\?\%([eE][+\-]\{-}\d\+\)\?', ']', 'g'),
   \ '\%(^\|:\|,\)\%(\s*\[\)\+', '', 'g') =~ '^[\],:{} \t\n]*$'
 endfunction
-
-
 
 function! s:parse_json(json)
   if !s:validate_json(a:json)
@@ -270,8 +255,6 @@ function! s:parse_json(json)
   return json
 endfunction
 
-
-
 function! s:iconv(expr, from, to)
   if a:from ==# a:to || a:from == '' || a:to == ''
     return a:expr
@@ -279,7 +262,6 @@ function! s:iconv(expr, from, to)
   let result = iconv(a:expr, a:from, a:to)
   return result != '' ? result : a:expr
 endfunction
-
 
 function! s:system(args)
   let type = type(a:args)
@@ -303,8 +285,6 @@ function! s:system(args)
   call github#debug_log(cmd)
   return system(cmd)
 endfunction
-
-
 
 function! s:cmdpath(cmd)
   " Search the fullpath of command for MS Windows.
@@ -330,7 +310,6 @@ function! s:cmdpath(cmd)
 endfunction
 
 
-
 " Debug.  {{{1
 function! github#debug_log(mes, ...)
   if g:github#debug
@@ -346,7 +325,6 @@ function! github#debug_log(mes, ...)
     endif
   endif
 endfunction
-
 
 
 " Options.  {{{1
@@ -382,7 +360,6 @@ if !exists('g:github#token')  " {{{2
 endif
 
 
-
 " Register the default features. {{{1
 function! s:register_defaults()
   let list = split(globpath(&runtimepath, 'autoload/github/*.vim'), "\n")
@@ -395,7 +372,6 @@ function! s:register_defaults()
 endfunction
 
 call s:register_defaults()
-
 
 
 let &cpo = s:save_cpo
