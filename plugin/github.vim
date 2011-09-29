@@ -12,13 +12,7 @@ let g:loaded_github = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-function! s:github_complete(lead, cmd, pos)
-  silent! let keys = github#complete(a:lead, a:cmd, a:pos)
-  return keys
-endfunction
-
-
-command! -nargs=+ -complete=customlist,s:github_complete
+command! -nargs=+ -complete=customlist,github#complete
 \        Github call github#invoke(<q-args>)
 
 
