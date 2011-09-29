@@ -14,7 +14,7 @@ let s:is_win = has('win16') || has('win32') || has('win64')
 
 
 let s:Base = {}  " {{{1
-function! s:Base.new(...)  " {{{2
+function! s:Base.new(...)
   let obj = copy(self)
   if has_key(obj, 'initialize')
     call call(obj.initialize, a:000, obj)
@@ -26,14 +26,14 @@ endfunction
 
 " API
 let s:Github = s:Base.new()  " {{{1
-function! s:Github.initialize(user, token)  " {{{2
+function! s:Github.initialize(user, token)
   let [self.user, self.token] = [a:user, a:token]
 
   let self.curl_cmd = g:github#curl_cmd
   let self.protocol = g:github#use_https ? 'https' : 'http'
 endfunction
 
-function! s:Github.connect(path, ...)  " {{{2
+function! s:Github.connect(path, ...)
   let params = {}
   let path = a:path
   let raw = 0
@@ -82,17 +82,17 @@ endfunction
 
 " UI
 let s:UI = s:Base.new()  " {{{1
-function! s:UI.opened(type)  " {{{2
+function! s:UI.opened(type)
 endfunction
 
-function! s:UI.updated(type, name)  " {{{2
+function! s:UI.updated(type, name)
 endfunction
 
-function! s:UI.header()  " {{{2
+function! s:UI.header()
   return ''
 endfunction
 
-function! s:UI.view(with, ...)  " {{{2
+function! s:UI.view(with, ...)
   let ft = 'github-' . self.name
   let bufnr = 0
   for i in range(0, winnr('$'))
@@ -135,7 +135,7 @@ function! s:UI.view(with, ...)  " {{{2
   setlocal nomodifiable readonly
 endfunction
 
-function! s:UI.edit(template, ...)  " {{{2
+function! s:UI.edit(template, ...)
   let ft = 'github-' . self.name
   let name = 'edit_' . a:template
 
@@ -163,26 +163,26 @@ endfunction
 " Features manager.  {{{1
 let s:features = {}
 
-function! github#register(feature)  " {{{2
+function! github#register(feature)
   let feature = extend(copy(s:UI), a:feature)
   let s:features[feature.name] = feature
 endfunction
 
 
 " Interfaces.  {{{1
-function! github#base()  " {{{2
+function! github#base()
   return s:Base.new()
 endfunction
 
 
 
-function! github#connect(path, ...)  " {{{2
+function! github#connect(path, ...)
   return s:Github.new(g:github#user, g:github#token).connect(a:path, a:000)
 endfunction
 
 
 
-function! github#flatten(list)  " {{{2
+function! github#flatten(list)
   let list = []
   for i in a:list
     if type(i) == type([])
@@ -197,7 +197,7 @@ endfunction
 
 
 
-function! github#get_text_on_cursor(pat)  " {{{2
+function! github#get_text_on_cursor(pat)
   let line = getline('.')
   let pos = col('.')
   let s = 0
@@ -216,7 +216,7 @@ endfunction
 
 
 " Main commands.  {{{1
-function! github#invoke(argline)  " {{{2
+function! github#invoke(argline)
   " The simplest implementation.
   try
     let [feat; args] = split(a:argline, '\s\+')
@@ -233,14 +233,14 @@ endfunction
 
 
 
-function! github#complete(lead, cmd, pos)  " {{{2
+function! github#complete(lead, cmd, pos)
   return keys(s:features)
 endfunction
 
 
 
 " JSON and others utilities.  {{{1
-function! s:validate_json(str)  " {{{2
+function! s:validate_json(str)
   " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm
 
   return a:str != '' &&
@@ -254,7 +254,7 @@ endfunction
 
 
 
-function! s:parse_json(json)  " {{{2
+function! s:parse_json(json)
   if !s:validate_json(a:json)
     call github#debug_log("Invalid response:\n" . a:json)
     throw 'github: Invalid json.'
@@ -272,7 +272,7 @@ endfunction
 
 
 
-function! s:iconv(expr, from, to)  " {{{2
+function! s:iconv(expr, from, to)
   if a:from ==# a:to || a:from == '' || a:to == ''
     return a:expr
   endif
@@ -281,7 +281,7 @@ function! s:iconv(expr, from, to)  " {{{2
 endfunction
 
 
-function! s:system(args)  " {{{2
+function! s:system(args)
   let type = type(a:args)
   let args = type == type([]) ? a:args :
   \          type == type('') ? split(a:args) : []
@@ -306,7 +306,7 @@ endfunction
 
 
 
-function! s:cmdpath(cmd)  " {{{2
+function! s:cmdpath(cmd)
   " Search the fullpath of command for MS Windows.
   let full = glob(a:cmd)
   if a:cmd ==? full
@@ -332,7 +332,7 @@ endfunction
 
 
 " Debug.  {{{1
-function! github#debug_log(mes, ...)  " {{{2
+function! github#debug_log(mes, ...)
   if g:github#debug
     let mes = a:0 ? call('printf', [a:mes] + a:000) : a:mes
     if g:github#debug_file == ''
@@ -384,7 +384,7 @@ endif
 
 
 " Register the default features. {{{1
-function! s:register_defaults()  " {{{2
+function! s:register_defaults()
   let list = split(globpath(&runtimepath, 'autoload/github/*.vim'), "\n")
   for name in map(list, 'fnamemodify(v:val, ":t:r")')
     try
