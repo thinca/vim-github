@@ -312,17 +312,18 @@ endfunction
 
 " Debug.  {{{1
 function! github#debug_log(mes, ...)
-  if g:github#debug
-    let mes = a:0 ? call('printf', [a:mes] + a:000) : a:mes
-    if g:github#debug_file == ''
-      for m in split(mes, "\n")
-        echomsg 'github: ' . m
-      endfor
-    else
-      execute 'redir >>' g:github#debug_file
-      silent! echo strftime('%c:') mes
-      redir END
-    endif
+  if !g:github#debug
+    return
+  endif
+  let mes = a:0 ? call('printf', [a:mes] + a:000) : a:mes
+  if g:github#debug_file == ''
+    for m in split(mes, "\n")
+      echomsg 'github: ' . m
+    endfor
+  else
+    execute 'redir >>' g:github#debug_file
+    silent! echo strftime('%c:') mes
+    redir END
   endif
 endfunction
 
