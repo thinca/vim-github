@@ -16,25 +16,25 @@ let s:repos = {}
 let s:Issues = github#base()
 let s:Issues.name = 'issues'
 
-function! s:Issues.initialize(user, repos)  " {{{2
+function! s:Issues.initialize(user, repos)
   let [self.user, self.repos] = [a:user, a:repos]
   let self.issues = []  " issues: Always sorted by issue number.
 endfunction
 
-function! s:Issues.get(number)  " {{{2
+function! s:Issues.get(number)
   return self.issues[a:number - 1]
 endfunction
 
-function! s:Issues.list()  " {{{2
+function! s:Issues.list()
   return copy(self.issues)
 endfunction
 
-function! s:Issues.comment_count(number)  " {{{2
+function! s:Issues.comment_count(number)
   let comments = self.get(a:number).comments
   return type(comments) == type(0) ? comments : len(comments)
 endfunction
 
-function! s:Issues.update_list()  " {{{2
+function! s:Issues.update_list()
   let open = self.connect('list', 'open')
   let closed = self.connect('list', 'closed')
 
@@ -43,24 +43,24 @@ function! s:Issues.update_list()  " {{{2
   call map(self.issues, 's:normalize_issue(v:val)')
 endfunction
 
-function! s:Issues.create_new_issue(title, body)  " {{{2
+function! s:Issues.create_new_issue(title, body)
   let issue = self.connect('open', {'title': a:title, 'body': a:body}).issue
   call add(self.issues, s:normalize_issue(issue))
   return issue
 endfunction
 
-function! s:Issues.update_issue(number, title, body)  " {{{2
+function! s:Issues.update_issue(number, title, body)
   let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
   let res.issue.comments = self.issues[a:number - 1].comments
   let self.issues[a:number - 1] = res.issue
 endfunction
 
-function! s:Issues.add_comment(number, comment)  " {{{2
+function! s:Issues.add_comment(number, comment)
   let comment = self.connect('comment', a:number, {'comment': a:comment})
   call add(self.get(a:number).comments, comment.comment)
 endfunction
 
-function! s:Issues.fetch_comments(number, ...)  " {{{2
+function! s:Issues.fetch_comments(number, ...)
   let issue = self.get(a:number)
   let force = a:0 && a:1
   if force || type(issue.comments) == type(0)
@@ -68,15 +68,15 @@ function! s:Issues.fetch_comments(number, ...)  " {{{2
   endif
 endfunction
 
-function! s:Issues.add_labels(label, number)  " {{{2
+function! s:Issues.add_labels(label, number)
   return self.update_labels(a:label, a:number, 'add')
 endfunction
 
-function! s:Issues.remove_labels(label, number)  " {{{2
+function! s:Issues.remove_labels(label, number)
   return self.update_labels(a:label, a:number, 'remove')
 endfunction
 
-function! s:Issues.update_labels(label, number, ...)  " {{{2
+function! s:Issues.update_labels(label, number, ...)
   " op = 'add'/'remove'/'all'
   let op = a:0 ? a:1 : 'all'
   if op ==# 'all'
@@ -97,15 +97,15 @@ function! s:Issues.update_labels(label, number, ...)  " {{{2
   endif
 endfunction
 
-function! s:Issues.close(number)  " {{{2
+function! s:Issues.close(number)
   let self.issues[a:number - 1] = self.connect('close', a:number).issue
 endfunction
 
-function! s:Issues.reopen(number)  " {{{2
+function! s:Issues.reopen(number)
   let self.issues[a:number - 1] = self.connect('reopen', a:number).issue
 endfunction
 
-function! s:Issues.connect(action, ...)  " {{{2
+function! s:Issues.connect(action, ...)
   let res = github#connect('/issues', a:action, self.user, self.repos,
   \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
   if has_key(res, 'error')
@@ -114,7 +114,7 @@ function! s:Issues.connect(action, ...)  " {{{2
   return res
 endfunction
 
-function! s:normalize_issue(issue)  " {{{2
+function! s:normalize_issue(issue)
   if a:issue.comments is 0
     let a:issue.comments = []
   endif
@@ -122,11 +122,10 @@ function! s:normalize_issue(issue)  " {{{2
 endfunction
 
 
-
 " UI object  {{{1
 let s:UI = {'name': 'issues'}
 
-function! s:UI.initialize(issues)  " {{{2
+function! s:UI.initialize(issues)
   let self.issues = a:issues
   call self.update_issue_list()
 endfunction
@@ -142,9 +141,7 @@ function! s:UI.update_issue_list()
   endfor
 endfunction
 
-
-
-function! s:UI.opened(type)  " {{{2
+function! s:UI.opened(type)
   nnoremap <buffer> <silent> <Plug>(github-issues-action)
   \        :<C-u>call b:github_issues.action()<CR>
 
@@ -177,9 +174,7 @@ function! s:UI.opened(type)  " {{{2
   endif
 endfunction
 
-
-
-function! s:UI.updated(type, name)  " {{{2
+function! s:UI.updated(type, name)
   if a:type ==# 'view'
     if a:name ==# 'issue_list'
       if has_key(self, 'issue')
@@ -190,22 +185,16 @@ function! s:UI.updated(type, name)  " {{{2
   endif
 endfunction
 
-
-
-function! s:UI.header()  " {{{2
+function! s:UI.header()
   return printf('Github Issues - %s/%s', self.issues.user, self.issues.repos)
 endfunction
 
-
-
-function! s:UI.view_issue_list()  " {{{2
+function! s:UI.view_issue_list()
   return ['[[new issue]]'] +
   \ map(copy(self.issue_list), 'self.line_format(v:val)')
 endfunction
 
-
-
-function! s:UI.view_issue(number)  " {{{2
+function! s:UI.view_issue(number)
   call self.issues.fetch_comments(a:number)
 
   let self.issue = self.issues.get(a:number)
@@ -214,9 +203,7 @@ function! s:UI.view_issue(number)  " {{{2
   \       '[[close]]' : '[[reopen]]')] + self.issue_layout(self.issue)
 endfunction
 
-
-
-function! s:UI.edit_issue(...)  " {{{2
+function! s:UI.edit_issue(...)
   let [title, labels, body] = a:0 ?
   \ [a:1.title, a:1.labels, a:1.body] :
   \ ['', [], "\n"]
@@ -229,23 +216,17 @@ function! s:UI.edit_issue(...)  " {{{2
   return text + ['body:'] + split(body, '\r\?\n', 1)
 endfunction
 
-
-
-function! s:UI.edit_comment(num)  " {{{2
+function! s:UI.edit_comment(num)
   return ['[[POST]]', 'number: ' . a:num, 'comment:', '', '']
 endfunction
 
-
-
-function! s:UI.line_format(issue)  " {{{2
+function! s:UI.line_format(issue)
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
   \      join(map(copy(a:issue.labels), '"[".v:val."]"'), ''),
   \      substitute(a:issue.title, '\n', '', 'g'))
 endfunction
 
-
-
-function! s:UI.issue_layout(issue)  " {{{2
+function! s:UI.issue_layout(issue)
   let i = a:issue
   let lines = [
   \ i.number . ': ' . i.title,
@@ -282,9 +263,8 @@ function! s:UI.issue_layout(issue)  " {{{2
 endfunction
 
 
-
 " Control.  {{{1
-function! s:UI.action()  " {{{2
+function! s:UI.action()
   try
     call self.perform(github#get_text_on_cursor('\[\[.\{-}\]\]'))
   catch /^github:/
@@ -294,7 +274,7 @@ function! s:UI.action()  " {{{2
   endtry
 endfunction
 
-function! s:UI.perform(button)  " {{{2
+function! s:UI.perform(button)
   let button = a:button
   if b:github_issues_buf ==# 'view_issue_list'
     if button ==# '[[new issue]]'
@@ -393,9 +373,7 @@ function! s:UI.perform(button)  " {{{2
   endif
 endfunction
 
-
-
-function! s:UI.redraw()  " {{{2
+function! s:UI.redraw()
   if b:github_issues_buf ==# 'view_issue_list'
     call self.view('issue_list')
   elseif b:github_issues_buf ==# 'view_issue'
@@ -403,9 +381,7 @@ function! s:UI.redraw()  " {{{2
   endif
 endfunction
 
-
-
-function! s:UI.reload()  " {{{2
+function! s:UI.reload()
   if b:github_issues_buf ==# 'view_issue_list'
     call self.issues.update_list()
     call self.update_issue_list()
@@ -416,9 +392,7 @@ function! s:UI.reload()  " {{{2
   endif
 endfunction
 
-
-
-function! s:UI.move(cnt)  " {{{2
+function! s:UI.move(cnt)
   let idx = (has_key(self, 'issue') ? self.rev_index[self.issue.number - 1]
   \                                 : -1) + a:cnt
   let length = len(self.issue_list)
@@ -432,9 +406,7 @@ function! s:UI.move(cnt)  " {{{2
   endif
 endfunction
 
-
-
-function! s:UI.invoke(args)  " {{{2
+function! s:UI.invoke(args)
   if empty(a:args)
     throw 'github: issues: Require the repository name.'
   endif
@@ -465,15 +437,12 @@ function! s:UI.invoke(args)  " {{{2
 endfunction
 
 
-
 " Misc.  {{{1
-function! s:order_by_number(a, b)  " {{{2
+function! s:order_by_number(a, b)
   return a:a.number - a:b.number
 endfunction
 
-
-
-function! s:compare_list(a, b)  " {{{2
+function! s:compare_list(a, b)
   " TODO: Be made customizable.
   if a:a.state !=# a:b.state
     return a:a.state ==# 'open' ? -1 : 1
@@ -481,9 +450,7 @@ function! s:compare_list(a, b)  " {{{2
   return a:a.number - a:b.number
 endfunction
 
-
-
-function! s:list_sub(a, b)  " {{{2
+function! s:list_sub(a, b)
   " Difference of list (a - b)
   let a = copy(a:a)
   call map(reverse(sort(filter(map(copy(a:b), 'index(a, v:val)'),
@@ -491,18 +458,13 @@ function! s:list_sub(a, b)  " {{{2
   return a
 endfunction
 
-
-
-function! s:func(name)  "{{{2
+function! s:func(name)
   return function(matchstr(expand('<sfile>'), '<SNR>\d\+_\zefunc$') . a:name)
 endfunction
 
-
-
-function! github#issues#new()  " {{{2
+function! github#issues#new()
   return copy(s:UI)
 endfunction
-
 
 
 let &cpo = s:save_cpo
