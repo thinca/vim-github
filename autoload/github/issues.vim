@@ -121,6 +121,16 @@ function! s:normalize_issue(issue)
   return a:issue
 endfunction
 
+function! s:get_issue(user, repos)
+  let key = a:user . '/' . a:repos
+  if !has_key(s:repos, key)
+    let issues = s:Issues.new(a:user, a:repos)
+    call issues.update_list()
+    let s:repos[key] = issues
+  endif
+  return s:repos[key]
+endfunction
+
 
 " UI object  {{{1
 let s:UI = {'name': 'issues'}
@@ -414,15 +424,7 @@ function! s:UI.invoke(args)
   let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
   \                                    : [g:github#user, repos]
 
-  let key = user . '/' . repos
-  if has_key(s:repos, key)
-    let issues = s:repos[key]
-  else
-    let issues = s:Issues.new(user, repos)
-    call issues.update_list()
-    let s:repos[key] = issues
-  endif
-  let ui = self.new(issues)
+  let ui = self.new(s:get_issue(user, repos))
 
   if len(a:args) == 1
     call ui.view('issue_list')
