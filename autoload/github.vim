@@ -320,7 +320,7 @@ function! github#debug_log(mes, ...)
       echomsg 'github: ' . m
     endfor
   else
-    execute 'redir >>' g:github#debug_file
+    execute 'redir >>' strftime(g:github#debug_file)
     silent! echo strftime('%c:') mes
     redir END
   endif
