@@ -29,7 +29,6 @@ function! s:Github.initialize(user, token)
   let [self.user, self.token] = [a:user, a:token]
 
   let self.curl_cmd = g:github#curl_cmd
-  let self.protocol = g:github#use_https ? 'https' : 'http'
 endfunction
 
 function! s:Github.connect(path, ...)
@@ -64,7 +63,7 @@ function! s:Github.connect(path, ...)
     endfor
 
     let res = s:system([self.curl_cmd, '-s', '-k',
-    \   printf('%s://%s%s%s', self.protocol, s:domain, s:base_path, path)]
+    \   printf('https://%s%s%s', s:domain, s:base_path, path)]
     \   + param)
   finally
     for f in files
@@ -331,10 +330,6 @@ endfunction
 " Options.  {{{1
 if !exists('g:github#curl_cmd')  " {{{2
   let g:github#curl_cmd = 'curl'
-endif
-
-if !exists('g:github#use_https')  " {{{2
-  let g:github#use_https = 0
 endif
 
 if !exists('g:github#use_vimproc')  " {{{2
