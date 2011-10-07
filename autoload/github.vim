@@ -320,7 +320,12 @@ function! github#debug_log(mes, ...)
       echomsg 'github: ' . m
     endfor
   else
-    execute 'redir >>' strftime(g:github#debug_file)
+    let file = strftime(g:github#debug_file)
+    let dir = fnamemodify(file, ':h')
+    if !isdirectory(dir)
+      call mkdir(dir, 'p')
+    endif
+    execute 'redir >>' file
     silent! echo strftime('%c:') mes
     redir END
   endif
