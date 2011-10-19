@@ -153,7 +153,7 @@ function! s:UI.initialize(path)
     let self.mode = 'issue'
   endif
   " number: 0 = list, 'new' = new, 1 or more = id
-  let self.number = get(self.path, 0, 0) - 0
+  let self.number = get(self.path, 0, 0)
 
   let self.issues = s:get_issue(pathinfo.user, pathinfo.repos)
   call self.update_issue_list()
@@ -210,12 +210,12 @@ endfunction
 
 function! s:UI.edit_issue()
   let text = ['[[POST]]']
-  if self.number isnot 'new'
+  if self.number is 'new'
     let [title, labels, body] = ['', [], '']
-    let text += ['number: ' . self.number]
   else
-    let issue = self.issues.get(a:number)
+    let i = self.issues.get(self.number)
     let [title, labels, body] = [i.title, i.labels, i.body]
+    let text += ['number: ' . self.number]
   endif
   let text += ['title: ' . title]
   call add(text, 'labels: ' . join(labels, ', '))
