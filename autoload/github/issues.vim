@@ -409,7 +409,9 @@ function! s:UI.read()
   silent % delete _
   silent 0put =self.header()
   silent $put =self[name]()
-  setlocal nomodifiable readonly
+  if self.type ==# 'view'
+    setlocal nomodifiable readonly
+  endif
   call setpos('.', cursor)
   call self.updated()
 endfunction
