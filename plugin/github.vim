@@ -16,6 +16,11 @@ command! -nargs=+ -complete=customlist,github#complete
 \        Github call github#invoke(<q-args>)
 
 
+augroup plugin-github
+  autocmd!
+  autocmd BufReadCmd github://* call github#read(expand('<amatch>'))
+augroup END
+
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
