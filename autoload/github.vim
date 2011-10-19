@@ -185,6 +185,9 @@ function! github#read(path)
   try
     let uri = github#parse_path(a:path, 'github://:feature/::param')
     if !exists('b:github')
+      if empty(uri)
+        throw 'github: Invalid path: ' . a:path
+      endif
       if !has_key(s:features, uri.feature)
         throw 'github: Specified feature is not registered: ' . uri.feature
       endif
