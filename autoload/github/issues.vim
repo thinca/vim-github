@@ -462,6 +462,16 @@ function! github#issues#new()
   return copy(s:UI)
 endfunction
 
+function! github#issues#complete(lead, cmd, pos)
+  let token = split(a:cmd, '\s\+')
+  let ntoken = len(token)
+  if ntoken == 2
+    let res = github#connect('/repos', 'show', g:github#user)
+    return map(res.repositories, 'v:val.name')
+  else
+    return []
+  endif
+endfunction
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
