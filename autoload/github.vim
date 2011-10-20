@@ -196,6 +196,7 @@ function! github#read(path)
     let &l:filetype = 'github-' . uri.feature
     call b:github.read()
   catch /^github:/
+    setlocal bufhidden=wipe
     echoerr v:exception
   endtry
 endfunction
