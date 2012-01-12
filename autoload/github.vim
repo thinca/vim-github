@@ -79,81 +79,6 @@ endfunction
 
 " UI  {{{1
 let s:UI = s:Base.new()
-function! s:UI.opened(type)
-endfunction
-
-function! s:UI.updated(type, name)
-endfunction
-
-function! s:UI.header()
-  return ''
-endfunction
-
-function! s:UI.view(with, ...)
-  let ft = 'github-' . self.name
-  let bufnr = 0
-  for i in range(0, winnr('$'))
-    let n = winbufnr(i)
-    if getbufvar(n, '&filetype') ==# ft
-      if i != 0
-        execute i 'wincmd w'
-      endif
-      let bufnr = n
-      break
-    endif
-  endfor
-
-  let name = 'view_' . a:with
-  if bufnr == 0
-    " TODO: Opener is made customizable.
-    " FIXME: This buffer name is tentative.
-    new `=printf('[github-%s:%s]', self.name, name)`
-
-    setlocal nobuflisted
-    setlocal buftype=nofile noswapfile bufhidden=wipe
-    setlocal nonumber nolist nowrap
-
-    call self.opened('view')
-
-    let &l:filetype = ft
-  else
-    setlocal modifiable noreadonly
-    silent % delete _
-  endif
-
-  let b:github_{self.name} = self
-  let b:github_{self.name}_buf = name
-
-  silent 0put =self.header()
-  silent $put =call(self[name], a:000, self)
-
-  1
-  call self.updated('view', a:with)
-  setlocal nomodifiable readonly
-endfunction
-
-function! s:UI.edit(template, ...)
-  let ft = 'github-' . self.name
-  let name = 'edit_' . a:template
-
-  " TODO: Opener is made customizable.
-  " FIXME: This buffer name is tentative.
-  new `=printf('[github-%s:%s]', self.name, name)`
-  let b:github_{self.name} = self
-
-  setlocal nobuflisted
-  setlocal buftype=nofile noswapfile bufhidden=wipe
-  let &l:filetype = ft
-
-  call self.opened('edit')
-
-  let b:github_{self.name}_buf = name
-  silent 0put =self.header()
-  silent $put =call(self[name], a:000, self)
-
-  1
-  call self.updated('view', a:template)
-endfunction
 
 
 " Features manager.  {{{1
@@ -203,6 +128,78 @@ function! github#get_text_on_cursor(pat)
   return ''
 endfunction
 
+" /path/*/to/*  => splat: [first, second]
+" /:feature/:user/:repos/#id
+function! github#parse_path(path, pattern)
+  let placefolder_pattern = '\v%((::?|#)\w+|\*\*?)'
+  let regexp = substitute(a:pattern, placefolder_pattern,
+  \                       '\=s:convert_placefolder(submatch(0))', 'g')
+  let matched = matchlist(a:path, '^' . regexp . '\m$')
+  if empty(matched)
+    return {}
+  endif
+  call remove(matched, 0)
+  let ret = {}
+  let splat = []
+  for folder in s:scan_string(a:pattern, placefolder_pattern)
+    let name = matchstr(folder, '\v^(::?|#)\zs\w+')
+    if !empty(name)
+      let ret[name] = remove(matched, 0)
+    else
+      call add(splat, remove(matched, 0))
+    endif
+  endfor
+  if !empty(splat)
+    let ret.splat = splat
+  endif
+  return ret
+endfunction
+
+function! s:convert_placefolder(placefolder)
+  if a:placefolder ==# '**' || a:placefolder =~# '^::'
+    let pat = '.*'
+  elseif a:placefolder =~# '^#'
+    let pat = '\d*'
+  else
+    let pat = '[^/]*'
+  endif
+  return '\(' . pat . '\)'
+endfunction
+
+function! s:scan_string(str, pattern)
+  let list = []
+  let pos = 0
+  while 0 <= pos
+    let matched = matchstr(a:str, a:pattern, pos)
+    let pos = matchend(a:str, a:pattern, pos)
+    if !empty(matched)
+      call add(list, matched)
+    endif
+  endwhile
+  return list
+endfunction
+
+
+" pseudo buffer. {{{1
+function! github#read(path)
+  try
+    let uri = github#parse_path(a:path, 'github://:feature/::param')
+    if !exists('b:github')
+      if empty(uri)
+        throw 'github: Invalid path: ' . a:path
+      endif
+      if !has_key(s:features, uri.feature)
+        throw 'github: Specified feature is not registered: ' . uri.feature
+      endif
+      let b:github = s:features[uri.feature].new('/' . uri.param)
+    endif
+    let &l:filetype = 'github-' . uri.feature
+    call b:github.read()
+  catch /^github:/
+    setlocal bufhidden=wipe
+    echoerr v:exception
+  endtry
+endfunction
 
 " Main commands.  {{{1
 function! github#invoke(argline)
@@ -221,7 +218,15 @@ function! github#invoke(argline)
 endfunction
 
 function! github#complete(lead, cmd, pos)
-  return keys(s:features)
+  let token = split(a:cmd, '\s\+')
+  let ntoken = len(token)
+  if ntoken == 1
+    return keys(s:features)
+  elseif ntoken == 2
+    return github#{token[1]}#complete(a:lead, a:cmd, a:pos)
+  else
+    return []
+  endif
 endfunction
 
 

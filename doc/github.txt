@@ -46,6 +46,17 @@ FUNCTIONS					*github-functions*
 github#connect({path} [, {param}] [, {raw}])	*github#connect()*
 			Connect to the github.
 
+------------------------------------------------------------------------------
+PATH						*github-path*
+
+This plugin uses a scheme "github://" for buffer name.  The form is following.
+>
+    github://{feature}/{path...}
+
+You can open a github buffer with a command which opens a buffer.
+>
+    :edit github://issues/thinca/vim-github
+
 
 
 ==============================================================================
@@ -71,6 +82,19 @@ issues {repos} new
 
 {repos} is just a own repository name or the form like "{user}/{repos}".
 
+
+Paths
+-----
+Issue list. >
+  github://issues/{user}/{repos}
+Issue. >
+  github://issues/{user}/{repos}/{id}
+Edit an issue. >
+  github://issues/{user}/{repos}/{id}/edit
+New issue. >
+  github://issues/{user}/{repos}/new
+New comment. >
+  github://issues/{user}/{repos}/{id}/comment/new
 
 
 Editing an issue

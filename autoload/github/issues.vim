@@ -121,12 +121,41 @@ function! s:normalize_issue(issue)
   return a:issue
 endfunction
 
+function! s:get_issue(user, repos)
+  let key = a:user . '/' . a:repos
+  if !has_key(s:repos, key)
+    let issues = s:Issues.new(a:user, a:repos)
+    call issues.update_list()
+    let s:repos[key] = issues
+  endif
+  return s:repos[key]
+endfunction
+
 
 " UI object  {{{1
 let s:UI = {'name': 'issues'}
 
-function! s:UI.initialize(issues)
-  let self.issues = a:issues
+function! s:UI.initialize(path)
+  let pathinfo = github#parse_path(a:path, '/:user/:repos/\?::path')
+  if empty(pathinfo)
+    throw 'github: issues: Require the repository name.'
+  endif
+
+  let path = pathinfo.path
+  let self.path = split(pathinfo.path, '/')
+  let self.type =
+  \   get(self.path, -1, '') =~# '^\%(edit\|new\)$' ? 'edit' : 'view'
+  if empty(self.path)
+    let self.mode = 'list'
+  elseif get(self.path, 1) is 'comment'
+    let self.mode = 'comment'
+  else
+    let self.mode = 'issue'
+  endif
+  " number: 0 = list, 'new' = new, 1 or more = id
+  let self.number = get(self.path, 0, 0)
+
+  let self.issues = s:get_issue(pathinfo.user, pathinfo.repos)
   call self.update_issue_list()
 endfunction
 
@@ -141,46 +170,21 @@ function! s:UI.update_issue_list()
   endfor
 endfunction
 
-function! s:UI.opened(type)
-  nnoremap <buffer> <silent> <Plug>(github-issues-action)
-  \        :<C-u>call b:github_issues.action()<CR>
-
-  silent! nmap <buffer> <unique> <CR> <Plug>(github-issues-action)
-
-  if a:type ==# 'view'
-    nnoremap <buffer> <silent> <Plug>(github-issues-issue-list)
-    \        :<C-u>call b:github_issues.view('issue_list')<CR>
-    nnoremap <buffer> <silent> <Plug>(github-issues-redraw)
-    \        :<C-u>call b:github_issues.redraw()<CR>
-    nnoremap <buffer> <silent> <Plug>(github-issues-reload)
-    \        :<C-u>call b:github_issues.reload()<CR>
-    nnoremap <buffer> <silent> <Plug>(github-issues-next)
-    \        :<C-u>call b:github_issues.move(v:count1)<CR>
-    nnoremap <buffer> <silent> <Plug>(github-issues-prev)
-    \        :<C-u>call b:github_issues.move(-v:count1)<CR>
-
-    nmap <buffer> <BS> <Plug>(github-issues-issue-list)
-    nmap <buffer> <C-t> <Plug>(github-issues-issue-list)
-    nmap <buffer> r <Plug>(github-issues-redraw)
-    nmap <buffer> R <Plug>(github-issues-reload)
-    nmap <buffer> <C-r> <Plug>(github-issues-reload)
-    nmap <buffer> <C-j> <Plug>(github-issues-next)
-    nmap <buffer> <C-k> <Plug>(github-issues-prev)
-
-    augroup plugin-github-issues
-      autocmd! * <buffer>
-      autocmd BufEnter <buffer> call b:github_issues.redraw()
-    augroup END
-  endif
+function! s:UI.open(...)
+  let base = [self.name, self.issues.user, self.issues.repos]
+  let args = github#flatten(a:000)
+  let path = printf('github://%s', join(base + args, '/'))
+  let edit = get(args, -1, '') =~# '^\%(edit\|new\)$'
+  " TODO: Opener is made customizable.
+  let opener = edit || &l:filetype !=# 'github-issues' ? 'new' : 'edit'
+  execute opener '`=path`'
 endfunction
 
-function! s:UI.updated(type, name)
-  if a:type ==# 'view'
-    if a:name ==# 'issue_list'
-      if has_key(self, 'issue')
-        call search('^\s*' . self.issue.number . ':', 'w')
-        call remove(self, 'issue')
-      endif
+function! s:UI.updated()
+  if self.type ==# 'view' && self.mode ==# 'list'
+    if exists('w:github_issues_last_opened')
+      call search('^\s*' . w:github_issues_last_opened . ':', 'w')
+      unlet w:github_issues_last_opened
     endif
   endif
 endfunction
@@ -189,35 +193,37 @@ function! s:UI.header()
   return printf('Github Issues - %s/%s', self.issues.user, self.issues.repos)
 endfunction
 
-function! s:UI.view_issue_list()
+function! s:UI.view_list()
   return ['[[new issue]]'] +
   \ map(copy(self.issue_list), 'self.line_format(v:val)')
 endfunction
 
-function! s:UI.view_issue(number)
-  call self.issues.fetch_comments(a:number)
+function! s:UI.view_issue()
+  call self.issues.fetch_comments(self.number)
 
-  let self.issue = self.issues.get(a:number)
+  let self.issue = self.issues.get(self.number)
+  let w:github_issues_last_opened = self.number
 
   return ['[[edit]] ' . (self.issue.state ==# 'open' ?
   \       '[[close]]' : '[[reopen]]')] + self.issue_layout(self.issue)
 endfunction
 
-function! s:UI.edit_issue(...)
-  let [title, labels, body] = a:0 ?
-  \ [a:1.title, a:1.labels, a:1.body] :
-  \ ['', [], "\n"]
+function! s:UI.edit_issue()
   let text = ['[[POST]]']
-  if a:0
-    let text += ['number: ' . a:1.number]
+  if self.number is 'new'
+    let [title, labels, body] = ['', [], '']
+  else
+    let i = self.issues.get(self.number)
+    let [title, labels, body] = [i.title, i.labels, i.body]
+    let text += ['number: ' . self.number]
   endif
   let text += ['title: ' . title]
   call add(text, 'labels: ' . join(labels, ', '))
   return text + ['body:'] + split(body, '\r\?\n', 1)
 endfunction
 
-function! s:UI.edit_comment(num)
-  return ['[[POST]]', 'number: ' . a:num, 'comment:', '', '']
+function! s:UI.edit_comment()
+  return ['[[POST]]', 'number: ' . self.number, 'comment:', '']
 endfunction
 
 function! s:UI.line_format(issue)
@@ -276,30 +282,28 @@ endfunction
 
 function! s:UI.perform(button)
   let button = a:button
-  if b:github_issues_buf ==# 'view_issue_list'
+  if self.mode ==# 'list'
     if button ==# '[[new issue]]'
-      call self.edit('issue')
+      call self.open('new')
     else
       let number = matchstr(getline('.'), '^\s*\zs\d\+\ze\s*:')
       if number =~ '^\d\+$'
-        call self.view('issue', number)
+        call self.open(number)
       endif
     endif
-  elseif b:github_issues_buf ==# 'view_issue'
+  elseif self.mode ==# 'issue' && self.type ==# 'view'
     if button ==# '[[edit]]'
-      call self.edit('issue', self.issue)
+      call self.open(self.number, 'edit')
     elseif button ==# '[[close]]'
-      let num = self.issue.number
-      call self.issues.close(num)
-      call self.view('issue', num)
+      call self.issues.close(self.number)
+      call self.open(self.number)
     elseif button ==# '[[reopen]]'
-      let num = self.issue.number
-      call self.issues.reopen(num)
-      call self.view('issue', num)
+      call self.issues.reopen(self.number)
+      call self.open(self.number)
     elseif button ==# '[[add comment]]'
-      call self.edit('comment', self.issue.number)
+      call self.open(self.number, 'comment', 'new')
     endif
-  elseif b:github_issues_buf ==# 'edit_issue'
+  elseif self.mode ==# 'issue' && self.type ==# 'edit'
     if button ==# '[[POST]]'
       let c = getpos('.')
       try
@@ -345,7 +349,7 @@ function! s:UI.perform(button)
         call setpos('.', c)
       endtry
     endif
-  elseif b:github_issues_buf ==# 'edit_comment'
+  elseif self.mode ==# 'comment'
     if button ==# '[[POST]]'
       let c = getpos('.')
       try
@@ -368,27 +372,19 @@ function! s:UI.perform(button)
 
   call self.update_issue_list()
 
-  if b:github_issues_buf =~# '^edit_' && button ==# '[[POST]]'
+  if self.type ==# 'edit' && button ==# '[[POST]]'
     close
   endif
 endfunction
 
-function! s:UI.redraw()
-  if b:github_issues_buf ==# 'view_issue_list'
-    call self.view('issue_list')
-  elseif b:github_issues_buf ==# 'view_issue'
-    call self.view('issue', self.issue.number)
-  endif
-endfunction
-
 function! s:UI.reload()
-  if b:github_issues_buf ==# 'view_issue_list'
+  if self.mode ==# 'list'
     call self.issues.update_list()
     call self.update_issue_list()
-    call self.view('issue_list')
-  elseif b:github_issues_buf ==# 'view_issue'
+    call self.open()
+  elseif self.mode ==# 'issue' && self.type ==# 'view'
     let self.issue.comments = 0
-    call self.view('issue', self.issue.number)
+    call self.open(self.issue.number)
   endif
 endfunction
 
@@ -400,40 +396,40 @@ function! s:UI.move(cnt)
     let idx = length - 1
   endif
   if idx < 0 || length <= idx
-    call self.view('issue_list')
+    call self.open()
   else
-    call self.view('issue', self.issue_list[idx].number)
+    call self.open(self.issue_list[idx].number)
   endif
 endfunction
+
+function! s:UI.read()
+  let cursor = getpos('.')
+  setlocal modifiable noreadonly
+  let name = self.type . '_' . self.mode
+  silent % delete _
+  silent 0put =self.header()
+  silent $put =self[name]()
+  if self.type ==# 'view'
+    setlocal nomodifiable readonly
+  endif
+  call setpos('.', cursor)
+  call self.updated()
+endfunction
+
 
 function! s:UI.invoke(args)
   if empty(a:args)
     throw 'github: issues: Require the repository name.'
   endif
   let repos = a:args[0]
-  let [user, repos] = repos =~ '/' ? split(repos, '/')[0 : 1]
-  \                                    : [g:github#user, repos]
-
-  let key = user . '/' . repos
-  if has_key(s:repos, key)
-    let issues = s:repos[key]
-  else
-    let issues = s:Issues.new(user, repos)
-    call issues.update_list()
-    let s:repos[key] = issues
+  let path = repos =~# '/' ? split(repos, '/')[0 : 1]
+  \                        : [g:github#user, repos]
+  if 2 <= len(a:args)
+    call add(path, a:args[1])
   endif
-  let ui = self.new(issues)
 
-  if len(a:args) == 1
-    call ui.view('issue_list')
-  else
-    let id = a:args[1]
-    if id =~ '^\d\+$'
-      call ui.view('issue', id)
-    elseif id ==# 'new'
-      call ui.edit('issue')
-    endif
-  endif
+  let ui = self.new('/' . join(path, '/'))
+  call ui.open(path[2 :])
 endfunction
 
 
@@ -466,6 +462,16 @@ function! github#issues#new()
   return copy(s:UI)
 endfunction
 
+function! github#issues#complete(lead, cmd, pos)
+  let token = split(a:cmd, '\s\+')
+  let ntoken = len(token)
+  if ntoken == 2
+    let res = github#connect('/repos', 'show', g:github#user)
+    return map(res.repositories, 'v:val.name')
+  else
+    return []
+  endif
+endfunction
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
