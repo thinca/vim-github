@@ -218,11 +218,13 @@ function! github#invoke(argline)
 endfunction
 
 function! github#complete(lead, cmd, pos)
-  let token = split(a:cmd, '\s\+')
+  let token = split(a:cmd, '\s\+', 1)
   let ntoken = len(token)
   if ntoken == 1
     return keys(s:features)
   elseif ntoken == 2
+    return filter(keys(s:features), 'stridx(v:val, token[1]) == 0')
+  elseif ntoken == 3
     return github#{token[1]}#complete(a:lead, a:cmd, a:pos)
   else
     return []
