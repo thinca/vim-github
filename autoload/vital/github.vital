@@ -2,4 +2,5 @@
 
 Web.Http
 Web.Json
+Web.Xml
 Prelude
