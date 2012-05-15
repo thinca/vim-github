@@ -19,7 +19,7 @@ function! s:UI.invoke(args)
 endfunction
 
 function! s:UI.read()
-  if get(b:, 'github_dashboard', 0)
+  if get(b:, 'github_dashboard', 0) && line('$') > 1
     return
   endif
 
@@ -66,6 +66,8 @@ function! s:UI.action()
     elseif button =~ '^pull '
       let [_, id, repo; __] = matchlist(button, 'pull request \(\d\+\) on \(\S\+\)$')
       exe "split" printf('github://issues/%s/%d', repo, id)
+    elseif button =~ '^http' && exists(':OpenBrowser')
+      exe "OpenBrowser" button
     endif
   catch /^github:/
     echohl ErrorMsg
