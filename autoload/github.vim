@@ -11,7 +11,9 @@ let s:domain = 'github.com'
 let s:base_path = '/api/v2/json'
 let s:is_win = has('win16') || has('win32') || has('win64')
 
-
+let s:V = vital#of('github')
+let s:http = s:V.import('Web.Http')
+let s:json = s:V.import('Web.Json')
 
 let s:Base = {}  " {{{1
 function! s:Base.new(...)
@@ -46,34 +48,17 @@ function! s:Github.connect(path, ...)
     unlet a
   endfor
 
-  let files = []
   try
     let postdata = {'login': self.user, 'token': self.token}
+    let postdata = extend(postdata, params)
 
-    for [key, val] in items(params)
-      let f = tempname()
-      call add(files, f)
-      call writefile(split(s:iconv(val, &encoding, 'utf-8'), "\n", 1), f, 'b')
-      let postdata[key] = '<' . f
-    endfor
-
-    let param = []
-    for [key, val] in items(postdata)
-      let param += ['-F', key . '=' . val]
-    endfor
-
-    let res = s:system([self.curl_cmd, '-s', '-k',
-    \   printf('https://%s%s%s', s:domain, s:base_path, path)]
-    \   + param)
-  finally
-    for f in files
-      call delete(f)
-    endfor
+    let url = printf('https://%s%s%s', s:domain, s:base_path, path)
+    let res = s:http.post(url, postdata).content
+  catch
+    let res = ''
   endtry
 
-  let res = s:iconv(res, 'utf-8', &encoding)
-
-  return raw ? res : s:parse_json(res)
+  return raw ? s:iconv(res, 'utf-8', &encoding) : s:json.decode(res)
 endfunction
 
 
@@ -231,36 +216,6 @@ function! github#complete(lead, cmd, pos)
   endif
 endfunction
 
-
-" JSON and others utilities.  {{{1
-function! s:validate_json(str)
-  " Reference: http://mattn.kaoriya.net/software/javascript/20100324023148.htm
-
-  return a:str != '' &&
-  \ substitute(substitute(substitute(
-  \ a:str,
-  \ '\\\%(["\\/bfnrt]\|u[0-9a-fA-F]\{4}\)', '\@', 'g'),
-  \ '"[^\"\\\n\r]*\"\|true\|false\|null\|-\?\d\+'
-  \ . '\%(\.\d*\)\?\%([eE][+\-]\{-}\d\+\)\?', ']', 'g'),
-  \ '\%(^\|:\|,\)\%(\s*\[\)\+', '', 'g') =~ '^[\],:{} \t\n]*$'
-endfunction
-
-function! s:parse_json(json)
-  if !s:validate_json(a:json)
-    call github#debug_log("Invalid response:\n" . a:json)
-    throw 'github: Invalid json.'
-  endif
-  let l:true = 1
-  let l:false = 0
-  let l:null = 0
-  sandbox let json = eval(a:json)
-  if g:github#debug
-    call github#debug_log("response json:\n" .
-    \ (exists('*PP') ? PP(json) : string(json)))
-  endif
-  return json
-endfunction
-
 function! s:iconv(expr, from, to)
   if a:from ==# a:to || a:from == '' || a:to == ''
     return a:expr
@@ -282,9 +237,9 @@ function! s:system(args)
   if s:is_win
     let args[0] = s:cmdpath(args[0])
     let q = '"'
-    let cmd = q . join(map(args,
+    let cmd = join(map(args,
     \   'q . substitute(escape(v:val, q), "[<>^|&]", "^\\0", "g") . q'),
-    \   ' ') . q
+    \   ' ')
   else
     let cmd = join(map(args, 'shellescape(v:val)'), ' ')
   endif
