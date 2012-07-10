@@ -31,8 +31,6 @@ endfunction
 let s:Github = s:Base.new()
 function! s:Github.initialize(user)
   let self.user = a:user
-
-  let self.curl_cmd = g:github#curl_cmd
 endfunction
 
 function! s:get_auth_token()
@@ -335,10 +333,6 @@ endfunction
 
 
 " Options.  {{{1
-if !exists('g:github#curl_cmd')  " {{{2
-  let g:github#curl_cmd = 'curl'
-endif
-
 if !exists('g:github#use_vimproc')  " {{{2
   let g:github#use_vimproc =
   \   globpath(&runtimepath, 'autoload/vimproc.vim') != ''
