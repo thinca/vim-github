@@ -37,7 +37,11 @@ endfunction
 
 function! s:get_auth_token()
   let secret = ''
-  let password = inputsecret('Github Password for '.g:github#user.':')
+  if exists('g:github#password')
+    let password = g:github#password
+  else
+    let password = inputsecret('Github Password for '.g:github#user.':')
+  endif
   if len(password) > 0
     let insecureSecret = printf('basic %s', s:base64.encode(g:github#user.':'.password))
     let res = s:http.post('https://api.github.com/authorizations', s:json.encode({
@@ -56,6 +60,7 @@ function! s:get_auth_token()
       echo authorization.message
       echohl None
       let secret = ''
+      unlet! g:github#password
     endif
   endif
   return secret

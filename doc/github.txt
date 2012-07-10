@@ -136,6 +136,10 @@ g:github#user					*g:github#user*
 			following command. >
 			git config --global github.user
 
+g:github#password				*g:github#password*
+			Password in github.  If omitted, this is confirmed
+			when necessary.
+
 g:github#token					*g:github#token*
 			API token in github.  If omitted, initialized with
 			following command. >
