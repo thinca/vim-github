@@ -35,36 +35,36 @@ function! s:Issues.comment_count(number)
 endfunction
 
 function! s:Issues.update_list()
-  let open = self.connect('list', 'open')
-  let closed = self.connect('list', 'closed')
+  let open = self.connect('get', 'issues', {'state': 'open', 'per_page': 10000})
+  let closed = self.connect('get', 'issues', {'state': 'closed', 'per_page': 10000})
 
-  let self.issues = sort(open.issues + closed.issues,
+  let self.issues = sort(open + closed,
   \                      s:func('order_by_number'))
   call map(self.issues, 's:normalize_issue(v:val)')
 endfunction
 
 function! s:Issues.create_new_issue(title, body)
-  let issue = self.connect('open', {'title': a:title, 'body': a:body}).issue
+  let issue = self.connect('post', 'issues', {'title': a:title, 'body': a:body})
   call add(self.issues, s:normalize_issue(issue))
   return issue
 endfunction
 
 function! s:Issues.update_issue(number, title, body)
-  let res = self.connect('edit', a:number, {'title': a:title, 'body': a:body})
-  let res.issue.comments = self.issues[a:number - 1].comments
-  let self.issues[a:number - 1] = res.issue
+  let res = self.connect('patch', 'issues', string(0 + a:number), {'title': a:title, 'body': a:body})
+  let res.comments = self.issues[a:number - 1].comments
+  let self.issues[a:number - 1] = res
 endfunction
 
 function! s:Issues.add_comment(number, comment)
-  let comment = self.connect('comment', a:number, {'comment': a:comment})
-  call add(self.get(a:number).comments, comment.comment)
+  let comment = self.connect('post', 'issues', string(0 + a:number), 'comments', {'body': a:comment})
+  call add(self.get(a:number).comments, comment)
 endfunction
 
 function! s:Issues.fetch_comments(number, ...)
   let issue = self.get(a:number)
   let force = a:0 && a:1
-  if force || type(issue.comments) == type(0)
-    let issue.comments = self.connect('comments', issue.number).comments
+  if force || !has_key(issue, 'comments') || type(issue.comments) == type(0)
+    let issue.comments = self.connect('get', 'issues', string(0 + a:number), 'comments')
   endif
 endfunction
 
@@ -98,17 +98,16 @@ function! s:Issues.update_labels(label, number, ...)
 endfunction
 
 function! s:Issues.close(number)
-  let self.issues[a:number - 1] = self.connect('close', a:number).issue
+  let self.issues[a:number - 1] = self.connect('patch', 'issues', string(0 + a:number), {'state': 'closed'})
 endfunction
 
 function! s:Issues.reopen(number)
-  let self.issues[a:number - 1] = self.connect('reopen', a:number).issue
+  let self.issues[a:number - 1] = self.connect('patch', 'issues', string(0 + a:number), {'state': 'open'})
 endfunction
 
-function! s:Issues.connect(action, ...)
-  let res = github#connect('/issues', a:action, self.user, self.repos,
-  \      map(copy(a:000), 'type(v:val) == type(0) ? v:val . "" : v:val'))
-  if has_key(res, 'error')
+function! s:Issues.connect(method, action, ...)
+  let res = github#connect(a:method, '/repos', self.user, self.repos, a:action, a:000, 0)
+  if type(res) == type({}) && has_key(res, 'error')
     throw 'github: issues: API error: ' . res.error
   endif
   return res
@@ -164,7 +163,7 @@ function! s:UI.update_issue_list()
   let list = sort(self.issues.list(), s:func('compare_list'))
   let self.issue_list = list
   let length = len(self.issue_list)
-  let self.rev_index = range(length)
+  let self.rev_index = {}
   for i in range(length)
     let self.rev_index[list[i].number - 1] = i
   endfor
@@ -228,7 +227,7 @@ endfunction
 
 function! s:UI.line_format(issue)
   return printf('%3d: %-6s| %s%s', a:issue.number, a:issue.state,
-  \      join(map(copy(a:issue.labels), '"[".v:val."]"'), ''),
+  \      join(map(copy(a:issue.labels), '"[". v:val.name ."]"'), ''),
   \      substitute(a:issue.title, '\n', '', 'g'))
 endfunction
 
@@ -237,7 +236,7 @@ function! s:UI.issue_layout(issue)
   let lines = [
   \ i.number . ': ' . i.title,
   \ 'state: ' . i.state,
-  \ 'user: ' . i.user,
+  \ 'user: ' . i.user.login,
   \ 'labels: ' . join(i.labels, ', '),
   \ 'created: ' . i.created_at,
   \ ]
@@ -248,7 +247,7 @@ function! s:UI.issue_layout(issue)
   if has_key(i, 'closed_at') && i.closed_at != 0
     let lines += ['closed: ' . i.closed_at]
   endif
-  if i.votes != 0
+  if has_key(i, 'votes') && i.votes != 0
     let lines += ['votes: ' . i.votes]
   endif
 
@@ -257,7 +256,7 @@ function! s:UI.issue_layout(issue)
   for c in i.comments
     let lines += [
     \ '------------------------------------------------------------',
-    \ '  ' . c.user . ' ' . c.created_at,
+    \ '  ' . c.user.login . ' ' . c.created_at,
     \ '',
     \ ]
     let lines += map(split(c.body, '\r\?\n'), '"  " . v:val')
