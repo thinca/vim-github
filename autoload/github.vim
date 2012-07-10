@@ -7,13 +7,15 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:domain = 'github.com'
-let s:base_path = '/api/v2/json'
+let s:domain = 'api.github.com'
+let s:base_path = ''
 let s:is_win = has('win16') || has('win32') || has('win64')
+let s:token = ''
 
 let s:V = vital#of('github')
 let s:http = s:V.import('Web.Http')
 let s:json = s:V.import('Web.Json')
+let s:base64 = s:V.import('Data.Base64')
 
 let s:Base = {}  " {{{1
 function! s:Base.new(...)
@@ -33,13 +35,40 @@ function! s:Github.initialize(user, token)
   let self.curl_cmd = g:github#curl_cmd
 endfunction
 
-function! s:Github.connect(path, ...)
-  let params = {}
+function! s:get_auth_token()
+  let secret = ''
+  let password = inputsecret('Github Password for '.g:github#user.':')
+  if len(password) > 0
+    let insecureSecret = printf('basic %s', s:base64.encode(g:github#user.':'.password))
+    let res = s:http.post('https://api.github.com/authorizations', s:json.encode({
+                \  'scopes'   : ['repo'],
+                \  'note'     : 'vim-github on '.hostname(),
+                \  'note_url' : 'https://github.com/thinca/vim-github'
+                \}), {
+                \  'Content-Type'  : 'application/json',
+                \  'Authorization' : insecureSecret,
+                \})
+    let authorization = s:json.decode(res.content)
+    if has_key(authorization, 'token')
+      let secret = authorization.token
+    elseif has_key(authorization, 'message')
+      echohl WarningMsg
+      echo authorization.message
+      echohl None
+      let secret = ''
+    endif
+  endif
+  return secret
+endfunction
+
+function! s:Github.connect(method, path, ...)
+  let method = toupper(a:method)
   let path = a:path
+  let params = {}
   let raw = 0
   for a in github#flatten(a:000)
     if type(a) == type(0)
-      raw = a
+      let raw = a
     elseif type(a) == type('')
       let path .= '/' . a
     elseif type(a) == type({})
@@ -49,18 +78,24 @@ function! s:Github.connect(path, ...)
   endfor
 
   try
-    let postdata = {'login': self.user, 'token': self.token}
-    let postdata = extend(postdata, params)
-
+    if len(s:token) == 0
+      let s:token = s:get_auth_token()
+    endif
     let url = printf('https://%s%s%s', s:domain, s:base_path, path)
-    let res = s:http.post(url, postdata).content
+    if method == 'GET'
+      let ret = s:http.get(url, params,
+      \  {'Authorization': printf('token %s', s:token)})
+    else
+      let ret = s:http.post(url, s:json.encode(params),
+      \  {'Authorization': printf('token %s', s:token), 'Content-Type': 'application/json'}, method)
+    endif
+	let res = ret.content
   catch
     let res = ''
   endtry
 
   return raw ? s:iconv(res, 'utf-8', &encoding) : s:json.decode(res)
 endfunction
-
 
 " UI  {{{1
 let s:UI = s:Base.new()
@@ -80,8 +115,8 @@ function! github#base()
   return s:Base.new()
 endfunction
 
-function! github#connect(path, ...)
-  return s:Github.new(g:github#user, g:github#token).connect(a:path, a:000)
+function! github#connect(method, path, ...)
+  return s:Github.new(g:github#user, g:github#token).connect(a:method, a:path, a:000)
 endfunction
 
 function! github#flatten(list)
