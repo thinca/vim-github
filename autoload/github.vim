@@ -29,8 +29,8 @@ endfunction
 
 " API  {{{1
 let s:Github = s:Base.new()
-function! s:Github.initialize(user, token)
-  let [self.user, self.token] = [a:user, a:token]
+function! s:Github.initialize(user)
+  let self.user = a:user
 
   let self.curl_cmd = g:github#curl_cmd
 endfunction
@@ -121,7 +121,7 @@ function! github#base()
 endfunction
 
 function! github#connect(method, path, ...)
-  return s:Github.new(g:github#user, g:github#token).connect(a:method, a:path, a:000)
+  return s:Github.new(g:github#user).connect(a:method, a:path, a:000)
 endfunction
 
 function! github#flatten(list)
@@ -356,12 +356,6 @@ if !exists('g:github#user')  " {{{2
   let g:github#user =
   \   matchstr(s:system('git config --global github.user'), '\w*')
 endif
-
-if !exists('g:github#token')  " {{{2
-  let g:github#token =
-  \   matchstr(s:system('git config --global github.token'), '\w*')
-endif
-
 
 " Register the default features. {{{1
 function! s:register_defaults()

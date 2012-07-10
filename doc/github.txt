@@ -140,11 +140,6 @@ g:github#password				*g:github#password*
 			Password in github.  If omitted, this is confirmed
 			when necessary.
 
-g:github#token					*g:github#token*
-			API token in github.  If omitted, initialized with
-			following command. >
-			git config --global github.token
-
 g:github#curl_cmd				*g:github#curl_cmd*
 			curl command.
 			The default value is "curl".
