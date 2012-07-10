@@ -89,7 +89,7 @@ function! s:Github.connect(method, path, ...)
       let ret = s:http.post(url, s:json.encode(params),
       \  {'Authorization': printf('token %s', s:token), 'Content-Type': 'application/json'}, method)
     endif
-	let res = ret.content
+    let res = ret.content
   catch
     let res = ''
   endtry
