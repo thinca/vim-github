@@ -34,9 +34,23 @@ function! s:Issues.comment_count(number)
   return type(comments) == type(0) ? comments : len(comments)
 endfunction
 
+function! s:get_issue_all(self, state)
+  let issues = []
+  let page = 1
+  while 1
+    let data = a:self.connect('get', 'issues', {'state': a:state, 'page': page, 'per_page': 100})
+    let issues += data
+    if len(data) < 100
+      break
+    endif
+    let page += 1
+  endwhile
+  return issues
+endfunction
+
 function! s:Issues.update_list()
-  let open = self.connect('get', 'issues', {'state': 'open', 'per_page': 10000})
-  let closed = self.connect('get', 'issues', {'state': 'closed', 'per_page': 10000})
+  let open = s:get_issue_all(self, 'open')
+  let closed = s:get_issue_all(self, 'closed')
 
   let self.issues = sort(open + closed,
   \                      s:func('order_by_number'))
