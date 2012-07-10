@@ -351,6 +351,11 @@ if !exists('g:github#user')  " {{{2
   \   matchstr(s:system('git config --global github.user'), '\w*')
 endif
 
+if !exists('g:github#token')  " {{{2
+  let g:github#token =
+  \   matchstr(s:system('git config --global github.token'), '\w*')
+endif
+
 " Register the default features. {{{1
 function! s:register_defaults()
   let list = split(globpath(&runtimepath, 'autoload/github/*.vim'), "\n")
