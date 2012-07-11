@@ -10,12 +10,34 @@ set cpo&vim
 let s:V = vital#of('github')
 let s:http = s:V.import('Web.Http')
 let s:xml = s:V.import('Web.Xml')
+let s:json = s:V.import('Web.Json')
+let s:prelude = s:V.import('Prelude')
+
+let s:use_icon = has('signs') && has('gui_running') && executable('curl') && executable('convert') && executable('animate')
+let s:icon_dir = substitute(fnamemodify(expand('~/.cache/vim-github'), ':p:8'), '\\', '/', 'g')
+let s:icon_dir = substitute(s:icon_dir, '/$', '', '')
+let s:icon_ext = (has('win32')||has('win64')) ? 'bmp' : 'xpm'
+if !isdirectory(s:icon_dir)
+  call mkdir(s:icon_dir, 'p')
+endif
 
 let s:UI = {'name': 'dashboard'}
 
 function! s:UI.invoke(args)
   let opener = &l:filetype !=# 'github-dashboard' ? 'new' : 'edit'
   execute opener 'github://dashboard/'
+endfunction
+
+function! s:get_icon(user)
+  let url = printf('https://api.github.com/users/%s', a:user)
+  let res = s:http.get(url)
+  let json = s:json.decode(res.content)
+  call s:prelude.system(printf("curl -L -o %s %s",
+  \  shellescape(printf("%s/%s.png", s:icon_dir, a:user)),
+  \  shellescape(json.avatar_url)))
+  call s:prelude.system(printf("convert %s %s",
+  \  shellescape(printf("%s/%s.png", s:icon_dir, a:user)),
+  \  shellescape(printf("%s/%s.%s", s:icon_dir, a:user, s:icon_ext))))
 endfunction
 
 function! s:UI.read()
@@ -42,6 +64,21 @@ function! s:UI.read()
     endif
     let content = printf("%s\n  [[%s]]\n\n", title, url)
     silent $put =content
+    if s:use_icon
+      let author = entry.childNode("author").childNode("name").value()
+      let fname = fnamemodify(s:icon_dir . '/' . author . '.' . s:icon_ext, ':p:8')
+      if !filereadable(fname)
+        call s:get_icon(author)
+      endif
+      if filereadable(fname)
+        silent! exe "sign unplace ".author." *"
+        silent! exe "sign undefine ".author."
+        silent! exe "sign define ".author." icon=".fnameescape(fname)
+        silent! exe "sign place ".line('.')." line=".(line('.')-2)." name=".author." file=".fnameescape(expand('%:p'))
+      else
+        echomsg author
+      endif
+    endif
   endfor
   setlocal nomodifiable readonly
   silent! normal! gg
