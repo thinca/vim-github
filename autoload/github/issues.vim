@@ -231,7 +231,7 @@ function! s:UI.edit_issue()
     let text += ['number: ' . self.number]
   endif
   let text += ['title: ' . title]
-  call add(text, 'labels: ' . join(labels, ', '))
+  call add(text, 'labels: ' . join(map(copy(i.labels), 'v:val.name'), ', '))
   return text + ['body:'] + split(body, '\r\?\n', 1)
 endfunction
 
@@ -251,7 +251,7 @@ function! s:UI.issue_layout(issue)
   \ i.number . ': ' . i.title,
   \ 'state: ' . i.state,
   \ 'user: ' . i.user.login,
-  \ 'labels: ' . join(i.labels, ', '),
+  \ 'labels: ' . join(map(copy(i.labels), 'v:val.name'), ', '),
   \ 'created: ' . i.created_at,
   \ ]
 
