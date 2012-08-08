@@ -230,7 +230,7 @@ function! s:UI.edit_issue()
     let text += ['number: ' . self.number]
   endif
   let text += ['title: ' . title]
-  call add(text, 'labels: ' . join(map(copy(i.labels), 'v:val.name'), ', '))
+  call add(text, 'labels: ' . join(map(copy(labels), 'v:val.name'), ', '))
   return text + ['body:'] + split(body, '\r\?\n', 1)
 endfunction
 
