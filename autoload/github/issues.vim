@@ -120,8 +120,12 @@ endfunction
 
 function! s:Issues.connect(method, action, ...)
   let res = github#connect(a:method, '/repos', self.user, self.repos, a:action, a:000, 0)
-  if type(res) == type({}) && has_key(res, 'error')
-    throw 'github: issues: API error: ' . res.error
+  if type(res) == type({})
+    if has_key(res, 'error')
+      throw 'github: issues: API error: ' . res.error
+    elseif get(res, 'message', '') ==# 'Bad credentials'
+      throw 'github: issues: API error: Bad credentials'
+    endif
   endif
   return res
 endfunction
